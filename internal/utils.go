@@ -25,10 +25,30 @@ func FileHash(path string) {
 		log.Fatalln(hashError)
 	}
 
-	fmt.Printf("file %s checksum: %s \n", path, hex.EncodeToString(hash.Sum(nil)))
+	fmt.Printf("file %s || checksum: %s \n", path, hex.EncodeToString(hash.Sum(nil)))
 }
 
 func DirectoryHash(path string) {
-	fmt.Printf("dir %s \n", path)
-	return
+	dir, err := os.Open(path)
+
+	if err != nil {
+		log.Fatalln(fileError)
+	}
+
+	defer dir.Close()
+
+	files, err := dir.ReadDir(0)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	for _, v := range files {
+		FileHash(checkFilePath(path, v.Name()))
+	}
+}
+
+func checkFilePath(path, name string) string {
+	//validation of file path
+	return path + "/" + name
 }
