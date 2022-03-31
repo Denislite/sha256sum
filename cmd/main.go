@@ -6,10 +6,12 @@ import (
 	"sha256sum/internal"
 )
 
-func main() {
-	var file string
-	var dir string
+var (
+	file string
+	dir  string
+)
 
+func main() {
 	flag.StringVar(&file, "f", "", "file path")
 	flag.StringVar(&dir, "d", "", "directory path")
 	flag.Parse()
