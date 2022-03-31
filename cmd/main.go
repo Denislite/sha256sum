@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	"log"
 	"sha256sum/internal"
 )
 
@@ -20,6 +20,6 @@ func main() {
 	case len(file) > 0:
 		internal.FileHash(file)
 	default:
-		fmt.Println("error based on command syntax")
+		log.Println("error based on command syntax")
 	}
 }
