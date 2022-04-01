@@ -10,7 +10,7 @@ const (
 
 func checkFilePath(path, name string) string {
 	matched, _ := regexp.MatchString(pattern, path)
-	if matched != false {
+	if matched != true {
 		return path + "/" + name
 	}
 	return path + name
