@@ -11,11 +11,13 @@ var (
 	dir  string
 )
 
-func main() {
+func init() {
 	flag.StringVar(&file, "f", "", "file path")
 	flag.StringVar(&dir, "d", "", "directory path")
 	flag.Parse()
+}
 
+func main() {
 	switch {
 	case len(dir) > 0:
 		internal.DirectoryHash(dir)
