@@ -13,7 +13,8 @@ func FileHash(path string) {
 	file, err := os.Open(path)
 
 	if err != nil {
-		log.Fatalln(fileError)
+		log.Println(fileError)
+		return
 	}
 
 	defer file.Close()
@@ -22,7 +23,8 @@ func FileHash(path string) {
 	_, err = io.Copy(hash, file)
 
 	if err != nil {
-		log.Fatalln(hashError)
+		log.Println(hashError)
+		return
 	}
 
 	fmt.Printf("file %s checksum: %s \n", path, hex.EncodeToString(hash.Sum(nil)))

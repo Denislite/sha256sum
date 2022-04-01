@@ -6,14 +6,18 @@ import (
 	"sha256sum/internal"
 )
 
-func main() {
-	var file string
-	var dir string
+var (
+	file string
+	dir  string
+)
 
+func init() {
 	flag.StringVar(&file, "f", "", "file path")
 	flag.StringVar(&dir, "d", "", "directory path")
 	flag.Parse()
+}
 
+func main() {
 	switch {
 	case len(dir) > 0:
 		internal.DirectoryHash(dir)
