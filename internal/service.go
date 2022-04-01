@@ -40,7 +40,7 @@ func DirectoryHash(path string) {
 	files, err := dir.ReadDir(0)
 
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln(dirError)
 	}
 
 	for _, v := range files {
