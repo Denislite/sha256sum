@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"sha256sum/internal"
 )
@@ -20,9 +21,9 @@ func init() {
 func main() {
 	switch {
 	case len(dir) > 0:
-		internal.DirectoryHash(dir)
+		//fmt.Printf("file %s checksum: %s \n", dir, internal.DirectoryHash(dir))
 	case len(file) > 0:
-		internal.FileHash(file)
+		fmt.Printf("file %s checksum: %s \n", file, internal.FileHash(file))
 	default:
 		log.Println("error based on command syntax")
 	}
