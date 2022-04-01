@@ -4,16 +4,15 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
-	"log"
 	"os"
+	"path/filepath"
 )
 
-func FileHash(path string) string {
+func FileHash(path string) (string, error) {
 	file, err := os.Open(path)
 
 	if err != nil {
-		log.Println(fileError)
-		return ""
+		return "", err
 	}
 
 	defer file.Close()
@@ -22,33 +21,32 @@ func FileHash(path string) string {
 	_, err = io.Copy(hash, file)
 
 	if err != nil {
-		log.Println(hashError)
-		return ""
+		return "", err
 	}
 
-	return hex.EncodeToString(hash.Sum(nil))
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
-func DirectoryHash(path string) []string {
-	dir, err := os.Open(path)
+func DirectoryHash(path string) (map[string]string, error) {
+	filesHash := make(map[string]string)
 
+	err := filepath.Walk(path,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() == false {
+				value, err := FileHash(path)
+				if err != nil {
+					return err
+				}
+				filesHash[path] = value
+			}
+			return nil
+		})
 	if err != nil {
-		log.Println(fileError)
-		return nil
+		return nil, err
 	}
 
-	defer dir.Close()
-
-	files, err := dir.ReadDir(0)
-
-	if err != nil {
-		log.Println(dirError)
-		return nil
-	}
-
-	for _, v := range files {
-		FileHash(checkFilePath(path, v.Name()))
-	}
-
-	return nil
+	return filesHash, nil
 }

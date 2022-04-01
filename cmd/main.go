@@ -21,9 +21,22 @@ func init() {
 func main() {
 	switch {
 	case len(dir) > 0:
-		//fmt.Printf("file %s checksum: %s \n", dir, internal.DirectoryHash(dir))
+		value, err := internal.DirectoryHash(dir)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println("Directory files:")
+		for file, hash := range value {
+			fmt.Printf("file %s || checksum: %s \n", file, hash)
+		}
 	case len(file) > 0:
-		fmt.Printf("file %s checksum: %s \n", file, internal.FileHash(file))
+		value, err := internal.FileHash(file)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Printf("file %s || checksum: %s \n", file, value)
 	default:
 		log.Println("error based on command syntax")
 	}
