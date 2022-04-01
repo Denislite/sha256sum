@@ -11,4 +11,8 @@ coming soon
 ---
 ## Usage:
 
-coming soon
+You can use it with options like:
+1. -f (path to file):
+```
+    go run cmd/main.go -f /base/.../dir/example.txt
+```
