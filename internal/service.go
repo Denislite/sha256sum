@@ -12,7 +12,7 @@ func FileHash(path string) (string, error) {
 	file, err := os.Open(path)
 
 	if err != nil {
-		return "", err
+		return "", ErrorWrongFile
 	}
 
 	defer file.Close()
@@ -21,7 +21,7 @@ func FileHash(path string) (string, error) {
 	_, err = io.Copy(hash, file)
 
 	if err != nil {
-		return "", err
+		return "", ErrorHash
 	}
 
 	return hex.EncodeToString(hash.Sum(nil)), nil
@@ -33,7 +33,7 @@ func DirectoryHash(path string) (map[string]string, error) {
 	err := filepath.Walk(path,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
-				return err
+				return ErrorDirectoryRead
 			}
 			if info.IsDir() == false {
 				value, err := FileHash(path)
@@ -45,7 +45,7 @@ func DirectoryHash(path string) (map[string]string, error) {
 			return nil
 		})
 	if err != nil {
-		return nil, err
+		return nil, ErrorDirectoryRead
 	}
 
 	return filesHash, nil
