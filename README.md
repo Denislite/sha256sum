@@ -16,3 +16,7 @@ You can use it with options like:
 ```
     go run cmd/main.go -f /base/.../dir/example.txt
 ```
+2. -d (path to dir):
+```
+    go run cmd/main.go -d /base/.../dir/
+```
