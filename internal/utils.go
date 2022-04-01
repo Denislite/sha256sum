@@ -9,12 +9,12 @@ import (
 	"os"
 )
 
-func FileHash(path string) {
+func FileHash(path string) string {
 	file, err := os.Open(path)
 
 	if err != nil {
 		log.Println(fileError)
-		return
+		return ""
 	}
 
 	defer file.Close()
@@ -24,13 +24,13 @@ func FileHash(path string) {
 
 	if err != nil {
 		log.Println(hashError)
-		return
+		return ""
 	}
 
-	fmt.Printf("file %s checksum: %s \n", path, hex.EncodeToString(hash.Sum(nil)))
+	return hex.EncodeToString(hash.Sum(nil))
 }
 
-func DirectoryHash(path string) {
+func DirectoryHash(path string) string {
 	fmt.Printf("dir %s \n", path)
-	return
+	return ""
 }
