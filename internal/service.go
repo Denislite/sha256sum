@@ -35,7 +35,7 @@ func DirectoryHash(path string) (map[string]string, error) {
 			if err != nil {
 				return ErrorDirectoryRead
 			}
-			if info.IsDir() == false {
+			if !info.IsDir() {
 				value, err := FileHash(path)
 				if err != nil {
 					return err
