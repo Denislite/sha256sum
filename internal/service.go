@@ -3,16 +3,30 @@ package internal
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
-func FileHash(path string) (string, error) {
+func Initialize(path string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	wg.Add(1)
+
+	go SearchFiles(path, wg)
+}
+
+func TakeFileHash(path string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	file, err := os.Open(path)
 
 	if err != nil {
-		return "", ErrorWrongFile
+		log.Println(ErrorWrongFile)
+		return
 	}
 
 	defer file.Close()
@@ -21,32 +35,30 @@ func FileHash(path string) (string, error) {
 	_, err = io.Copy(hash, file)
 
 	if err != nil {
-		return "", ErrorHash
+		log.Println(ErrorHash)
+		return
 	}
 
-	return hex.EncodeToString(hash.Sum(nil)), nil
+	fmt.Printf("file %s || checksum: %s \n", path, hex.EncodeToString(hash.Sum(nil)))
 }
 
-func DirectoryHash(path string) (map[string]string, error) {
-	filesHash := make(map[string]string)
+func SearchFiles(commonPath string, wg *sync.WaitGroup) {
+	defer wg.Done()
 
-	err := filepath.Walk(path,
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return ErrorDirectoryRead
-			}
-			if !info.IsDir() {
-				value, err := FileHash(path)
-				if err != nil {
-					return err
-				}
-				filesHash[path] = value
-			}
-			return nil
-		})
+	err := filepath.Walk(commonPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return ErrorDirectoryRead
+		}
+
+		if !info.IsDir() {
+			wg.Add(1)
+			go TakeFileHash(path, wg)
+		}
+		return nil
+	})
+
 	if err != nil {
-		return nil, ErrorDirectoryRead
+		log.Println(err)
+		return
 	}
-
-	return filesHash, nil
 }

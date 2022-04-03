@@ -2,42 +2,28 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"sha256sum/internal"
+	"sync"
 )
 
 var (
-	file string
-	dir  string
+	path string
+	wg   sync.WaitGroup
 )
 
 func init() {
-	flag.StringVar(&file, "f", "", "file path")
-	flag.StringVar(&dir, "d", "", "directory path")
+	flag.StringVar(&path, "f", "", "directory path")
 	flag.Parse()
+	wg.Add(1)
 }
 
 func main() {
 	switch {
-	case len(dir) > 0:
-		value, err := internal.DirectoryHash(dir)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		fmt.Println("Directory files:")
-		for file, hash := range value {
-			fmt.Printf("file %s || checksum: %s \n", file, hash)
-		}
-	case len(file) > 0:
-		value, err := internal.FileHash(file)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		fmt.Printf("file %s || checksum: %s \n", file, value)
+	case len(path) > 0:
+		go internal.Initialize(path, &wg)
+		wg.Wait()
 	default:
-		log.Println("error based on command syntax")
+		log.Println(internal.ErrorOption)
 	}
 }
