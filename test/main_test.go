@@ -14,7 +14,7 @@ func BenchmarkDefault(b *testing.B) {
 	wg.Add(1)
 
 	b.ResetTimer()
-	go internal.Initialize(testPath, &wg)
+	go internal.SearchFiles(testPath, &wg)
 	b.StopTimer()
 
 	wg.Wait()

@@ -11,14 +11,6 @@ import (
 	"sync"
 )
 
-func Initialize(path string, wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	wg.Add(1)
-
-	go SearchFiles(path, wg)
-}
-
 func TakeFileHash(path string, wg *sync.WaitGroup) {
 	defer wg.Done()
 

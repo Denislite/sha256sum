@@ -21,7 +21,7 @@ func init() {
 func main() {
 	switch {
 	case len(path) > 0:
-		go internal.Initialize(path, &wg)
+		go internal.SearchFiles(path, &wg)
 		wg.Wait()
 	default:
 		log.Println(internal.ErrorOption)
