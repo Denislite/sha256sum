@@ -11,12 +11,9 @@ coming soon
 ---
 ## Usage:
 
-You can use it with options like:
-1. -f (path to file):
+You can use it with option like:
+1. -f (path to file/dir):
 ```
     go run cmd/main.go -f /base/.../dir/example.txt
-```
-2. -d (path to dir):
-```
-    go run cmd/main.go -d /base/.../dir/
+    go run cmd/main.go -f /base/.../dir/
 ```
