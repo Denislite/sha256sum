@@ -12,7 +12,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&dir, "f", "", "directory path")
+	flag.StringVar(&dir, "d", "", "directory path")
 	flag.Parse()
 }
 
