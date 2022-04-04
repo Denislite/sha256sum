@@ -14,16 +14,18 @@ var (
 
 func init() {
 	flag.StringVar(&file, "f", "", "file path")
-	flag.StringVar(&dir, "d", "", "directory path")
 	flag.Parse()
 }
 
 func main() {
 	switch {
 	case len(dir) > 0:
-		fmt.Printf("file %s checksum: %s \n", dir, internal.DirectoryHash(dir))
-	case len(file) > 0:
-		fmt.Printf("file %s checksum: %s \n", file, internal.FileHash(file))
+		value, err := internal.FileHash(dir)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		fmt.Printf("file %s checksum: %s \n", dir, value)
 	default:
 		log.Println("error based on command syntax")
 	}

@@ -3,18 +3,17 @@ package internal
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"log"
 	"os"
 )
 
-func FileHash(path string) string {
+func FileHash(path string) (string, error) {
 	file, err := os.Open(path)
 
 	if err != nil {
 		log.Println(fileError)
-		return ""
+		return "", fileError
 	}
 
 	defer file.Close()
@@ -24,13 +23,8 @@ func FileHash(path string) string {
 
 	if err != nil {
 		log.Println(hashError)
-		return ""
+		return "", hashError
 	}
 
-	return hex.EncodeToString(hash.Sum(nil))
-}
-
-func DirectoryHash(path string) string {
-	fmt.Printf("dir %s \n", path)
-	return ""
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }

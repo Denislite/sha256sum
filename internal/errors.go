@@ -1,6 +1,8 @@
 package internal
 
-const (
-	fileError = "wrong file/dir path"
-	hashError = "error occurred while taking a hash from file"
+import "errors"
+
+var (
+	fileError = errors.New("wrong file/dir path")
+	hashError = errors.New("error occurred while taking a hash from file")
 )
