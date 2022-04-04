@@ -3,6 +3,7 @@ package internal
 import "errors"
 
 var (
-	fileError = errors.New("wrong file/dir path")
-	hashError = errors.New("error occurred while taking a hash from file")
+	ErrorWrongFile     = errors.New("wrong file path")
+	ErrorHash          = errors.New("error occurred while taking a hash from file")
+	ErrorDirectoryRead = errors.New("error occurred while reading files from directory")
 )

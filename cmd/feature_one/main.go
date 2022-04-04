@@ -9,7 +9,6 @@ import (
 
 var (
 	file string
-	dir  string
 )
 
 func init() {
@@ -19,13 +18,13 @@ func init() {
 
 func main() {
 	switch {
-	case len(dir) > 0:
-		value, err := internal.FileHash(dir)
+	case len(file) > 0:
+		value, err := internal.FileHash(file)
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		fmt.Printf("file %s checksum: %s \n", dir, value)
+		fmt.Printf("file %s checksum: %s \n", file, value)
 	default:
 		log.Println("error based on command syntax")
 	}
