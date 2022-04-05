@@ -8,52 +8,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sync"
+	"time"
 )
-
-func TakeFileHash(path string, wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	file, err := os.Open(path)
-
-	if err != nil {
-		log.Println(ErrorWrongFile)
-		return
-	}
-
-	defer file.Close()
-
-	hash := sha256.New()
-	_, err = io.Copy(hash, file)
-
-	if err != nil {
-		log.Println(ErrorHash)
-		return
-	}
-
-	fmt.Printf("file %s || checksum: %s \n", path, hex.EncodeToString(hash.Sum(nil)))
-}
-
-func SearchFiles(commonPath string, wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	err := filepath.Walk(commonPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return ErrorDirectoryRead
-		}
-
-		if !info.IsDir() {
-			wg.Add(1)
-			go TakeFileHash(path, wg)
-		}
-		return nil
-	})
-
-	if err != nil {
-		log.Println(err)
-		return
-	}
-}
 
 // FileHash - function to get file hash sum without concurrency
 func FileHash(path string) (string, error) {
@@ -98,4 +54,70 @@ func DirectoryHash(path string) (map[string]string, error) {
 	}
 
 	return filesHash, nil
+}
+
+func LookUpManager(inputPath string, paths chan string) {
+	err := filepath.Walk(inputPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return ErrorDirectoryRead
+		}
+
+		if !info.IsDir() {
+			paths <- path
+		}
+		return nil
+	})
+
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	close(paths)
+}
+
+func Hasher(paths <-chan string, hashes chan<- string) {
+	for path := range paths {
+		file, err := os.Open(path)
+
+		if err != nil {
+			log.Println(ErrorWrongFile)
+			return
+		}
+
+		defer file.Close()
+
+		hash := sha256.New()
+		_, err = io.Copy(hash, file)
+
+		if err != nil {
+			log.Println(ErrorHash)
+			return
+		}
+
+		hashes <- fmt.Sprintf("file %s || checksum: %s", path, hex.EncodeToString(hash.Sum(nil)))
+	}
+}
+
+func Sha256Sum(path string) {
+	paths := make(chan string)
+	hashes := make(chan string)
+	wait := time.After(100 * time.Millisecond)
+
+	go LookUpManager(path, paths)
+
+	//we can use all our process by runtime.NumCPU
+	for worker := 1; worker <= 3; worker++ {
+		go Hasher(paths, hashes)
+	}
+
+	for {
+		select {
+		case i := <-hashes:
+			fmt.Println(i)
+		case <-wait:
+			return
+		}
+	}
+
 }
