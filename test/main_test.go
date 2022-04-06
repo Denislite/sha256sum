@@ -8,7 +8,6 @@ import (
 
 const testPath = "/Users/denislogvinov/Downloads/smth/test"
 
-//speed up about 3-3.5x with 3 workers
 func BenchmarkConcurrency(b *testing.B) {
 	b.ResetTimer()
 
