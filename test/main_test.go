@@ -6,13 +6,18 @@ import (
 	"testing"
 )
 
-const testPath = "/Users/denislogvinov/Downloads/javafx-sdk-17.0.2"
+const testPath = "/Users/denislogvinov/Downloads/smth/test"
 
 //speed up about 3-3.5x with 3 workers
 func BenchmarkConcurrency(b *testing.B) {
 	b.ResetTimer()
 
-	internal.Sha256Sum(testPath)
+	paths := make(chan string)
+	hashes := make(chan string)
+
+	go internal.Sha256sum(paths, hashes)
+	go internal.LookUpManager(testPath, paths)
+	internal.PrintResult(hashes)
 
 	b.StopTimer()
 }

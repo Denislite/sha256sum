@@ -8,7 +8,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"time"
+	"runtime"
+	"sync"
 )
 
 // FileHash - function to get file hash sum without concurrency
@@ -61,22 +62,21 @@ func LookUpManager(inputPath string, paths chan string) {
 		if err != nil {
 			return ErrorDirectoryRead
 		}
-
 		if !info.IsDir() {
 			paths <- path
 		}
+
 		return nil
 	})
+	close(paths)
 
 	if err != nil {
 		log.Println(err)
-		return
 	}
-
-	close(paths)
 }
 
-func Hasher(paths <-chan string, hashes chan<- string) {
+func Hasher(wg *sync.WaitGroup, paths <-chan string, hashes chan<- string) {
+	defer wg.Done()
 	for path := range paths {
 		file, err := os.Open(path)
 
@@ -99,25 +99,24 @@ func Hasher(paths <-chan string, hashes chan<- string) {
 	}
 }
 
-func Sha256Sum(path string) {
-	paths := make(chan string)
-	hashes := make(chan string)
-	wait := time.After(100 * time.Millisecond)
-
-	go LookUpManager(path, paths)
-
-	//we can use all our process by runtime.NumCPU
-	for worker := 1; worker <= 3; worker++ {
-		go Hasher(paths, hashes)
+func Sha256sum(paths, hashes chan string) {
+	var wg sync.WaitGroup
+	for worker := 1; worker <= (runtime.NumCPU() / 2); worker++ {
+		wg.Add(1)
+		go Hasher(&wg, paths, hashes)
 	}
+	defer close(hashes)
+	wg.Wait()
+}
 
+func PrintResult(hashes chan string) {
 	for {
 		select {
-		case i := <-hashes:
-			fmt.Println(i)
-		case <-wait:
-			return
+		case hash, ok := <-hashes:
+			if !ok {
+				return
+			}
+			fmt.Println(hash)
 		}
 	}
-
 }
