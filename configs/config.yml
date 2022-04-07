@@ -1,0 +1,6 @@
+db:
+  port: 8000
+  host: localhost
+  username: example
+  password: example
+  dbname: example
