@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"sha256sum/internal/domain"
+	"sha256sum/internal/utils"
 )
 
 var (
@@ -36,7 +36,7 @@ func Initialize(dir, path, hashType string, help bool, ctx context.Context) {
 	case len(path) > 0:
 		fmt.Println(FileHash(path, hashType))
 	default:
-		log.Println(domain.ErrorOption)
+		log.Println(utils.ErrorOption)
 	}
 }
 
@@ -49,7 +49,7 @@ func createDocs() {
 		flag.VisitAll(func(f *flag.Flag) {
 			_, err := fmt.Fprintf(os.Stderr, "-%v %v  \n", f.Name, f.Usage)
 			if err != nil {
-				log.Println(domain.ErrorDocs)
+				log.Println(utils.ErrorDocs)
 				return
 			}
 		})

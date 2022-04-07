@@ -11,7 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"sha256sum/internal/domain"
+	"sha256sum/internal/utils"
 	"sync"
 )
 
@@ -20,7 +20,7 @@ func FileHash(path, hashType string) string {
 	file, err := os.Open(path)
 
 	if err != nil {
-		log.Println(domain.ErrorWrongFile)
+		log.Println(utils.ErrorWrongFile)
 		return ""
 	}
 
@@ -44,7 +44,7 @@ func FileHash(path, hashType string) string {
 	}
 
 	if err != nil {
-		log.Println(domain.ErrorHash)
+		log.Println(utils.ErrorHash)
 		return ""
 	}
 
@@ -55,7 +55,7 @@ func FileHash(path, hashType string) string {
 func LookUpManager(inputPath string, paths chan string) {
 	err := filepath.Walk(inputPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return domain.ErrorDirectoryRead
+			return utils.ErrorDirectoryRead
 		}
 		if !info.IsDir() {
 			paths <- path
