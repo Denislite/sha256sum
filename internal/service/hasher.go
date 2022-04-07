@@ -11,8 +11,9 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"sha256sum/internal/utils"
 	"sync"
+
+	"sha256sum/internal/utils"
 )
 
 // FileHash - function to get file hash sum
@@ -91,7 +92,7 @@ func Sha256sum(paths, hashes chan string, hashType string) {
 }
 
 // PrintResult - output function
-func PrintResult(hashes chan string, ctx context.Context) {
+func PrintResult(ctx context.Context, hashes chan string) {
 	for {
 		select {
 		case hash, ok := <-hashes:

@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+
 	"sha256sum/internal/utils"
 )
 
@@ -31,7 +32,7 @@ func Initialize(dir, path, hashType string, help bool, ctx context.Context) {
 	case len(dir) > 0:
 		go Sha256sum(paths, hashes, hashType)
 		go LookUpManager(dir, paths)
-		PrintResult(hashes, ctx)
+		PrintResult(ctx, hashes)
 
 	case len(path) > 0:
 		fmt.Println(FileHash(path, hashType))
