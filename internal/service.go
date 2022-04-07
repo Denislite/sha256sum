@@ -32,7 +32,7 @@ func FileHash(path, hashType string) string {
 		hash := md5.New()
 		_, err = io.Copy(hash, file)
 		value = hash.Sum(nil)
-	case "512":
+	case "sha512":
 		hash := sha512.New()
 		_, err = io.Copy(hash, file)
 		value = hash.Sum(nil)
