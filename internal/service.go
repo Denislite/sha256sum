@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -72,6 +73,7 @@ func LookUpManager(inputPath string, paths chan string) {
 
 	if err != nil {
 		log.Println(err)
+		return
 	}
 }
 
@@ -117,6 +119,22 @@ func PrintResult(hashes chan string) {
 				return
 			}
 			fmt.Println(hash)
+		}
+	}
+}
+
+func PrintResultCtx(hashes chan string, ctx context.Context) {
+	for {
+		select {
+		case hash, ok := <-hashes:
+			if !ok {
+				return
+			}
+			fmt.Println(hash)
+		case <-ctx.Done():
+			log.Println("request canceled by context")
+			os.Exit(1)
+			return
 		}
 	}
 }
