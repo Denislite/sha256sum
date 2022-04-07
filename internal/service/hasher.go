@@ -1,4 +1,4 @@
-package internal
+package service
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sha256sum/internal/domain"
 	"sync"
 )
 
@@ -19,7 +20,7 @@ func FileHash(path, hashType string) string {
 	file, err := os.Open(path)
 
 	if err != nil {
-		log.Println(ErrorWrongFile)
+		log.Println(domain.ErrorWrongFile)
 		return ""
 	}
 
@@ -43,7 +44,7 @@ func FileHash(path, hashType string) string {
 	}
 
 	if err != nil {
-		log.Println(ErrorHash)
+		log.Println(domain.ErrorHash)
 		return ""
 	}
 
@@ -54,7 +55,7 @@ func FileHash(path, hashType string) string {
 func LookUpManager(inputPath string, paths chan string) {
 	err := filepath.Walk(inputPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return ErrorDirectoryRead
+			return domain.ErrorDirectoryRead
 		}
 		if !info.IsDir() {
 			paths <- path
