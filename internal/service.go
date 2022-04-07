@@ -2,8 +2,9 @@ package internal
 
 import (
 	"context"
+	"crypto/md5"
 	"crypto/sha256"
-	"encoding/hex"
+	"crypto/sha512"
 	"fmt"
 	"io"
 	"log"
@@ -14,48 +15,39 @@ import (
 )
 
 // FileHash - function to get file hash sum without concurrency
-func FileHash(path string) (string, error) {
+func FileHash(path, hashType string) string {
 	file, err := os.Open(path)
 
 	if err != nil {
-		return "", ErrorWrongFile
+		log.Println(ErrorWrongFile)
+		return ""
 	}
 
 	defer file.Close()
 
-	hash := sha256.New()
-	_, err = io.Copy(hash, file)
+	var value interface{}
 
-	if err != nil {
-		return "", ErrorHash
+	switch hashType {
+	case "md5":
+		hash := md5.New()
+		_, err = io.Copy(hash, file)
+		value = hash.Sum(nil)
+	case "512":
+		hash := sha512.New()
+		_, err = io.Copy(hash, file)
+		value = hash.Sum(nil)
+	default:
+		hash := sha256.New()
+		_, err = io.Copy(hash, file)
+		value = hash.Sum(nil)
 	}
 
-	return hex.EncodeToString(hash.Sum(nil)), nil
-}
-
-// DirectoryHash - function to get files(from dir) hash sum without concurrency
-func DirectoryHash(path string) (map[string]string, error) {
-	filesHash := make(map[string]string)
-
-	err := filepath.Walk(path,
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return ErrorDirectoryRead
-			}
-			if info.IsDir() == false {
-				value, err := FileHash(path)
-				if err != nil {
-					return err
-				}
-				filesHash[path] = value
-			}
-			return nil
-		})
 	if err != nil {
-		return nil, ErrorDirectoryRead
+		log.Println(ErrorHash)
+		return ""
 	}
 
-	return filesHash, nil
+	return fmt.Sprintf("file %s || checksum: %x", path, value)
 }
 
 func LookUpManager(inputPath string, paths chan string) {
@@ -77,53 +69,24 @@ func LookUpManager(inputPath string, paths chan string) {
 	}
 }
 
-func Hasher(wg *sync.WaitGroup, paths <-chan string, hashes chan<- string) {
+func Hasher(wg *sync.WaitGroup, paths <-chan string, hashes chan<- string, hashType string) {
 	defer wg.Done()
 	for path := range paths {
-		file, err := os.Open(path)
-
-		if err != nil {
-			log.Println(ErrorWrongFile)
-			return
-		}
-
-		defer file.Close()
-
-		hash := sha256.New()
-		_, err = io.Copy(hash, file)
-
-		if err != nil {
-			log.Println(ErrorHash)
-			return
-		}
-
-		hashes <- fmt.Sprintf("file %s || checksum: %s", path, hex.EncodeToString(hash.Sum(nil)))
+		hashes <- FileHash(path, hashType)
 	}
 }
 
-func Sha256sum(paths, hashes chan string) {
+func Sha256sum(paths, hashes chan string, hashType string) {
 	var wg sync.WaitGroup
 	for worker := 1; worker <= (runtime.NumCPU() / 2); worker++ {
 		wg.Add(1)
-		go Hasher(&wg, paths, hashes)
+		go Hasher(&wg, paths, hashes, hashType)
 	}
 	defer close(hashes)
 	wg.Wait()
 }
 
-func PrintResult(hashes chan string) {
-	for {
-		select {
-		case hash, ok := <-hashes:
-			if !ok {
-				return
-			}
-			fmt.Println(hash)
-		}
-	}
-}
-
-func PrintResultCtx(hashes chan string, ctx context.Context) {
+func PrintResult(hashes chan string, ctx context.Context) {
 	for {
 		select {
 		case hash, ok := <-hashes:

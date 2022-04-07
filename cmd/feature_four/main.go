@@ -11,17 +11,21 @@ import (
 )
 
 var (
-	path    string
-	help    bool
-	paths   chan string
-	hashes  chan string
-	signals chan os.Signal
-	ctx     context.Context
+	dir      string
+	path     string
+	hashType string
+	help     bool
+	paths    chan string
+	hashes   chan string
+	signals  chan os.Signal
+	ctx      context.Context
 )
 
 func init() {
-	flag.StringVar(&path, "o", "", "/example/.../dir/ || you can check hash sum by dir/file path")
-	flag.BoolVar(&help, "h", false, "|| read documentation")
+	flag.StringVar(&dir, "d", "", "/example/.../dir/ || you can check hash sum by dir path")
+	flag.StringVar(&path, "f", "", "/example/.../text.txt || you can check hash sum by file path")
+	flag.StringVar(&hashType, "a", "", "available: md5, sha512 || default: sha256")
+	flag.BoolVar(&help, "h", false, "|| you can read options")
 	flag.Parse()
 
 	paths = make(chan string)
@@ -51,11 +55,13 @@ func main() {
 		createDocs()
 		flag.Usage()
 
-	case len(path) > 0:
-		go internal.Sha256sum(paths, hashes)
-		go internal.LookUpManager(path, paths)
-		internal.PrintResultCtx(hashes, ctx)
+	case len(dir) > 0:
+		go internal.Sha256sum(paths, hashes, hashType)
+		go internal.LookUpManager(dir, paths)
+		internal.PrintResult(hashes, ctx)
 
+	case len(path) > 0:
+		fmt.Println(internal.FileHash(path, hashType))
 	default:
 		log.Println(internal.ErrorOption)
 	}
