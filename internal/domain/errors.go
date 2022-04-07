@@ -3,8 +3,9 @@ package domain
 import "errors"
 
 var (
-	ErrorWrongFile     = errors.New("wrong file path")
+	ErrorWrongFile     = errors.New("error occurred with file, please check your file path")
 	ErrorHash          = errors.New("error occurred while taking a hash from file")
 	ErrorDirectoryRead = errors.New("error occurred while reading files from directory")
-	ErrorOption        = errors.New("no option, use -h to read docs")
+	ErrorOption        = errors.New("error occurred with options, use -h to learn more")
+	ErrorDocs          = errors.New("error occurred while creating documentation")
 )

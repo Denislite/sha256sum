@@ -49,6 +49,7 @@ func createDocs() {
 		flag.VisitAll(func(f *flag.Flag) {
 			_, err := fmt.Fprintf(os.Stderr, "-%v %v  \n", f.Name, f.Usage)
 			if err != nil {
+				log.Println(domain.ErrorOption)
 				return
 			}
 		})
