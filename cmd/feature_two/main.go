@@ -29,6 +29,6 @@ func main() {
 			fmt.Printf("file %s || checksum: %s \n", file, hash)
 		}
 	default:
-		log.Println("error based on command syntax")
+		log.Println(internal.ErrorOptionDir)
 	}
 }
