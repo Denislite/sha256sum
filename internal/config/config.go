@@ -1,4 +1,4 @@
-package configs
+package config
 
 func Init() {
 
@@ -7,5 +7,3 @@ func Init() {
 func ParseConfigFile() {
 
 }
-
-
