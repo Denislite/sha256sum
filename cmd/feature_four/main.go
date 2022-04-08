@@ -3,8 +3,11 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
+	"log"
 	"os"
-	"sha256sum/internal/service"
+	"sha256sum/internal/utils"
+	"sha256sum/pkg/hash"
 )
 
 var (
@@ -27,7 +30,35 @@ func init() {
 	ctx = context.Background()
 }
 
+var (
+	paths  = make(chan string)
+	hashes = make(chan string)
+)
+
 func main() {
-	service.CheckSignal(signals)
-	service.Initialize(dir, path, hashType, help, ctx)
+	utils.CheckSignal(signals)
+
+	ctx, cancel := context.WithCancel(ctx)
+
+	go func() {
+		fmt.Scanln()
+		cancel()
+	}()
+
+	switch {
+	case help:
+		utils.CreateDocs()
+		flag.Usage()
+
+	case len(dir) > 0:
+		go hash.Sha256sum(paths, hashes, hashType)
+		go hash.LookUpManager(dir, paths)
+		hash.PrintResult(ctx, hashes)
+
+	case len(path) > 0:
+		fmt.Println(hash.FileHash(path, hashType))
+
+	default:
+		log.Println(utils.ErrorOption)
+	}
 }

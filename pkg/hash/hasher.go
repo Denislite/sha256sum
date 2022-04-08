@@ -1,4 +1,4 @@
-package service
+package hash
 
 import (
 	"context"
