@@ -17,6 +17,8 @@ var (
 	help     bool
 	ctx      context.Context
 	signals  chan os.Signal
+	paths    = make(chan string)
+	hashes   = make(chan string)
 )
 
 func init() {
@@ -30,18 +32,16 @@ func init() {
 	ctx = context.Background()
 }
 
-var (
-	paths  = make(chan string)
-	hashes = make(chan string)
-)
-
 func main() {
 	utils.CheckSignal(signals)
 
 	ctx, cancel := context.WithCancel(ctx)
 
 	go func() {
-		fmt.Scanln()
+		_, err := fmt.Scanln()
+		if err != nil {
+			return
+		}
 		cancel()
 	}()
 
