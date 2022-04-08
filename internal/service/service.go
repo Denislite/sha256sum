@@ -1,7 +1,7 @@
 package service
 
 type Hasher interface {
-	FileHash()
+	FileHash(path, hashType string) (string, error)
 	DirectoryHash()
 }
 
