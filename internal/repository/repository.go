@@ -1,7 +1,7 @@
 package repository
 
 type Hasher interface {
-	SaveHash()
+	SaveHash(name, hash string) error
 }
 
 type Repository struct {
