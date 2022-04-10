@@ -11,7 +11,11 @@ func NewHasherService() *HasherService {
 
 func (h HasherService) FileHash(path, hashType string) (string, error) {
 
-	value := hash.FileHash(path, hashType)
+	value, err := hash.FileHash(path, hashType)
+
+	if err != nil {
+		return "", err
+	}
 
 	return value, nil
 }

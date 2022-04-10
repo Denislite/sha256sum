@@ -17,12 +17,11 @@ import (
 )
 
 // FileHash - function to get file hash sum
-func FileHash(path, hashType string) string {
+func FileHash(path, hashType string) (string, error) {
 	file, err := os.Open(path)
 
 	if err != nil {
-		log.Println(utils.ErrorWrongFile)
-		return ""
+		return "", utils.ErrorWrongFile
 	}
 
 	defer file.Close()
@@ -45,11 +44,10 @@ func FileHash(path, hashType string) string {
 	}
 
 	if err != nil {
-		log.Println(utils.ErrorHash)
-		return ""
+		return "", utils.ErrorHash
 	}
 
-	return fmt.Sprintf("file %s || checksum: %x", path, value)
+	return fmt.Sprintf("file %s || checksum: %x", path, value), nil
 }
 
 // LookUpManager - function to get files path
@@ -76,7 +74,11 @@ func LookUpManager(inputPath string, paths chan string) {
 func Hasher(wg *sync.WaitGroup, paths <-chan string, hashes chan<- string, hashType string) {
 	defer wg.Done()
 	for path := range paths {
-		hashes <- FileHash(path, hashType)
+		hash, err := FileHash(path, hashType)
+		if err != nil {
+			log.Println(err)
+		}
+		hashes <- hash
 	}
 }
 

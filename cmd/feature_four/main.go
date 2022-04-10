@@ -56,7 +56,12 @@ func main() {
 		hash.PrintResult(ctx, hashes)
 
 	case len(path) > 0:
-		fmt.Println(hash.FileHash(path, hashType))
+		hash, err := hash.FileHash(path, hashType)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		fmt.Println(hash)
 
 	default:
 		log.Println(utils.ErrorOption)

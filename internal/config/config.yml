@@ -4,3 +4,4 @@ db:
   username: example
   password: example
   dbname: example
+  sslmode: disable
