@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sha256sum/internal/configs"
 	"sha256sum/internal/repository"
 	"sha256sum/internal/service"
 	"sha256sum/internal/utils"
@@ -46,7 +47,12 @@ func main() {
 		cancel()
 	}()
 
-	db, err := repository.NewPostgresDB(repository.Config{})
+	cfg, err := configs.ParseConfigFile("./internal/configs")
+	if err != nil {
+		log.Println(utils.ErrorConfig)
+	}
+
+	db, err := repository.NewPostgresDB(cfg)
 	if err != nil {
 		log.Println(utils.ErrorDBConnection)
 	}
