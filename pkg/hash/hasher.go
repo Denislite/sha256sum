@@ -65,7 +65,7 @@ func LookUpManager(inputPath string, paths chan string) {
 	close(paths)
 
 	if err != nil {
-		log.Println(err)
+		log.Println(utils.ErrorDirectoryRead)
 		return
 	}
 }
@@ -85,7 +85,7 @@ func Hasher(wg *sync.WaitGroup, paths <-chan string, hashes chan<- string, hashT
 // Sha256sum - main function which init our workers pool
 func Sha256sum(paths, hashes chan string, hashType string) {
 	var wg sync.WaitGroup
-	for worker := 1; worker <= (runtime.NumCPU() / 2); worker++ {
+	for worker := 1; worker <= runtime.NumCPU(); worker++ {
 		wg.Add(1)
 		go Hasher(&wg, paths, hashes, hashType)
 	}

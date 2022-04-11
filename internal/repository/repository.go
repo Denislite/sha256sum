@@ -10,6 +10,6 @@ type Repository struct {
 	Hasher
 }
 
-func NewRepository(db *sqlx.DB) *Repository {
-	return &Repository{Hasher: NewHasherRepository(db)}
+func NewRepository(db *sqlx.DB) Repository {
+	return Repository{Hasher: NewHasherRepository(db)}
 }

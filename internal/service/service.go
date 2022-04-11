@@ -1,10 +1,13 @@
 package service
 
-import "sha256sum/internal/repository"
+import (
+	"context"
+	"sha256sum/internal/repository"
+)
 
 type Hasher interface {
 	FileHash(path, hashType string) (string, error)
-	DirectoryHash()
+	DirectoryHash(ctx context.Context, path, hashType string) error
 }
 
 type Service struct {

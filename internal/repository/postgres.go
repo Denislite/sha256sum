@@ -3,8 +3,6 @@ package repository
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"log"
-	"sha256sum/internal/utils"
 )
 
 type Config struct {
@@ -21,12 +19,10 @@ func NewPostgresDB(cfg Config) (*sqlx.DB, error) {
 		cfg.Host, cfg.Port, cfg.Username, cfg.DBName, cfg.Password, cfg.SSLMode))
 
 	if err != nil {
-		log.Println(utils.ErrorDBConnection)
 		return nil, err
 	}
 
 	if err = db.Ping(); err != nil {
-		log.Println(utils.ErrorDBConnection)
 		return nil, err
 	}
 

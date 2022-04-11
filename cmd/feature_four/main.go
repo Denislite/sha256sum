@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sha256sum/internal/repository"
+	"sha256sum/internal/service"
 	"sha256sum/internal/utils"
-	"sha256sum/pkg/hash"
 )
 
 var (
@@ -45,20 +46,29 @@ func main() {
 		cancel()
 	}()
 
+	db, err := repository.NewPostgresDB(repository.Config{})
+	if err != nil {
+		log.Println(utils.ErrorDBConnection)
+	}
+
+	r := repository.NewRepository(db)
+
+	s := service.NewService(r)
+
 	switch {
 	case help:
 		utils.CreateDocs()
 		flag.Usage()
 
 	case len(dir) > 0:
-		go hash.Sha256sum(paths, hashes, hashType)
-		go hash.LookUpManager(dir, paths)
-		hash.PrintResult(ctx, hashes)
-
-	case len(path) > 0:
-		hash, err := hash.FileHash(path, hashType)
+		err := s.Hasher.DirectoryHash(ctx, dir, hashType)
 		if err != nil {
-			return
+			log.Println(err)
+		}
+	case len(path) > 0:
+		hash, err := s.Hasher.FileHash(path, hashType)
+		if err != nil {
+			log.Println(err)
 		}
 		fmt.Println(hash)
 
