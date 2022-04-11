@@ -1,6 +1,8 @@
 CREATE TABLE files
 (
-    id          INT PRIMARY KEY,
+    id          BIGSERIAL PRIMARY KEY,
     file_name   VARCHAR,
-    hash_value  VARCHAR
+    file_path   TEXT,
+    hash_value  VARCHAR,
+    hash_type   VARCHAR
 );
