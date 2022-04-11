@@ -58,7 +58,6 @@ func main() {
 	case len(path) > 0:
 		hash, err := hash.FileHash(path, hashType)
 		if err != nil {
-			log.Println(err)
 			return
 		}
 		fmt.Println(hash)

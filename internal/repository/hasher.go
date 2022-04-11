@@ -10,8 +10,8 @@ type HasherRepository struct {
 	db *sqlx.DB
 }
 
-func NewHasherRepository() *HasherRepository {
-	return &HasherRepository{}
+func NewHasherRepository(db *sqlx.DB) *HasherRepository {
+	return &HasherRepository{db: db}
 }
 
 func (s *HasherRepository) SaveHash(name, hash string) error {
@@ -23,6 +23,7 @@ func (s *HasherRepository) SaveHash(name, hash string) error {
 	err := row.Scan(&id)
 	if err != nil {
 		log.Println(err)
+		return err
 	}
 
 	return nil

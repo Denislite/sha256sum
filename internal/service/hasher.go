@@ -1,26 +1,32 @@
 package service
 
-import "sha256sum/pkg/hash"
+import (
+	"log"
+	"sha256sum/internal/repository"
+	"sha256sum/pkg/hash"
+)
 
 type HasherService struct {
+	repo repository.Repository
 }
 
-func NewHasherService() *HasherService {
-	return &HasherService{}
+func NewHasherService(repo repository.Repository) *HasherService {
+	return &HasherService{repo: repo}
 }
 
-func (h HasherService) FileHash(path, hashType string) (string, error) {
+func (s HasherService) FileHash(path, hashType string) (string, error) {
 
 	value, err := hash.FileHash(path, hashType)
 
 	if err != nil {
+		log.Println(err)
 		return "", err
 	}
 
 	return value, nil
 }
 
-func (h HasherService) DirectoryHash() {
+func (s HasherService) DirectoryHash() {
 	//TODO implement me
 	panic("implement me")
 }
