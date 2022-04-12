@@ -46,6 +46,7 @@ func FileHash(path, hashType string) (*model.Hasher, error) {
 		hash := sha256.New()
 		_, err = io.Copy(hash, file)
 		data.HashValue = hash.Sum(nil)
+		data.HashType = "sha256"
 	}
 
 	if err != nil {

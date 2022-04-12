@@ -24,6 +24,11 @@ func (s HasherService) FileHash(path, hashType string) (*model.Hasher, error) {
 		return nil, err
 	}
 
+	err = s.repo.SaveHash(*value)
+	if err != nil {
+		return nil, err
+	}
+
 	return value, nil
 }
 

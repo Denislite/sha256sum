@@ -15,11 +15,11 @@ func NewHasherRepository(db *sqlx.DB) *HasherRepository {
 }
 
 func (s *HasherRepository) SaveHash(input model.Hasher) error {
-	query := fmt.Sprintf(`INSERT INTO files (file_name, file_path, hash_value, hash_type) 
-			VALUES ($1, $2, $3, $4) RETURNING id`)
+	query := fmt.Sprintf(`SELECT check_hash($1, $2, $3, $4);`)
 
 	var id string
-	row := s.db.QueryRow(query, input.FileName, input.FilePath, input.HashValue, input.HashType)
+	row := s.db.QueryRow(query, input.FileName, input.FilePath,
+		fmt.Sprintf("%x", input.HashValue), input.HashType)
 
 	err := row.Scan(&id)
 	if err != nil {

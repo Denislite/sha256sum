@@ -76,7 +76,7 @@ func main() {
 		if err != nil {
 			log.Println(err)
 		}
-		fmt.Println(hash)
+		fmt.Printf("%x, %s \n", hash.HashValue, hash.FileName)
 
 	default:
 		log.Println(utils.ErrorOption)
