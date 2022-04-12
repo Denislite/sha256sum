@@ -16,7 +16,7 @@ func ParseConfigFile(dir string) (*model.PostgresConfig, error) {
 	}
 
 	var cfg *model.PostgresConfig
-	err = viper.Unmarshal(&cfg)
+	err = viper.UnmarshalKey("db", &cfg)
 
 	return cfg, nil
 }
