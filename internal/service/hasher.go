@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"sha256sum/internal/model"
 	"sha256sum/internal/repository"
 	"sha256sum/pkg/hash"
@@ -25,6 +24,7 @@ func (s HasherService) FileHash(path, hashType string) (*model.Hasher, error) {
 	}
 
 	err = s.repo.SaveHash(*value)
+
 	if err != nil {
 		return nil, err
 	}
@@ -39,9 +39,10 @@ func (s HasherService) DirectoryHash(ctx context.Context, path, hashType string)
 	go hash.Sha256sum(paths, hashes, hashType)
 	go hash.LookUpManager(path, paths)
 	value := hash.PrintResult(ctx, hashes)
-	//just for testing
-	for k, v := range value {
-		fmt.Println(k, v)
+
+	err := s.repo.SaveDirectoryHash(value)
+	if err != nil {
+		return err
 	}
 
 	return nil

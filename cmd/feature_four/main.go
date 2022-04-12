@@ -75,6 +75,7 @@ func main() {
 		hash, err := s.Hasher.FileHash(path, hashType)
 		if err != nil {
 			log.Println(err)
+			return
 		}
 		fmt.Printf("%x, %s \n", hash.HashValue, hash.FileName)
 

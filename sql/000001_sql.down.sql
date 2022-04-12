@@ -1,1 +1,2 @@
 DROP TABLE IF EXISTS files;
+DROP FUNCTION IF EXISTS check_hash;
