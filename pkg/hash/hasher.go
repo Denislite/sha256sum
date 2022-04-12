@@ -11,43 +11,48 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sha256sum/internal/model"
 	"sync"
 
 	"sha256sum/internal/utils"
 )
 
 // FileHash - function to get file hash sum
-func FileHash(path, hashType string) (string, error) {
+func FileHash(path, hashType string) (*model.Hasher, error) {
 	file, err := os.Open(path)
 
 	if err != nil {
-		return "", utils.ErrorWrongFile
+		return nil, utils.ErrorWrongFile
 	}
 
 	defer file.Close()
 
-	var value interface{}
+	data := model.Hasher{
+		FileName: filepath.Base(path),
+		FilePath: path,
+		HashType: hashType,
+	}
 
 	switch hashType {
 	case "md5":
 		hash := md5.New()
 		_, err = io.Copy(hash, file)
-		value = hash.Sum(nil)
+		data.HashValue = hash.Sum(nil)
 	case "sha512":
 		hash := sha512.New()
 		_, err = io.Copy(hash, file)
-		value = hash.Sum(nil)
+		data.HashValue = hash.Sum(nil)
 	default:
 		hash := sha256.New()
 		_, err = io.Copy(hash, file)
-		value = hash.Sum(nil)
+		data.HashValue = hash.Sum(nil)
 	}
 
 	if err != nil {
-		return "", utils.ErrorHash
+		return nil, utils.ErrorHash
 	}
 
-	return fmt.Sprintf("file %s || checksum: %x", path, value), nil
+	return &data, nil
 }
 
 // LookUpManager - function to get files path
@@ -71,19 +76,19 @@ func LookUpManager(inputPath string, paths chan string) {
 }
 
 // Hasher - function to get all files hashes from directory
-func Hasher(wg *sync.WaitGroup, paths <-chan string, hashes chan<- string, hashType string) {
+func Hasher(wg *sync.WaitGroup, paths <-chan string, hashes chan<- model.Hasher, hashType string) {
 	defer wg.Done()
 	for path := range paths {
 		hash, err := FileHash(path, hashType)
 		if err != nil {
 			log.Println(err)
 		}
-		hashes <- hash
+		hashes <- *hash
 	}
 }
 
 // Sha256sum - main function which init our workers pool
-func Sha256sum(paths, hashes chan string, hashType string) {
+func Sha256sum(paths chan string, hashes chan model.Hasher, hashType string) {
 	var wg sync.WaitGroup
 	for worker := 1; worker <= runtime.NumCPU(); worker++ {
 		wg.Add(1)
@@ -94,18 +99,21 @@ func Sha256sum(paths, hashes chan string, hashType string) {
 }
 
 // PrintResult - output function
-func PrintResult(ctx context.Context, hashes chan string) {
+func PrintResult(ctx context.Context, hashes chan model.Hasher) []model.Hasher {
+	var result []model.Hasher
 	for {
 		select {
 		case hash, ok := <-hashes:
 			if !ok {
-				return
+				return result
 			}
-			fmt.Println(hash)
+			result = append(result, hash)
+			fmt.Printf("%x %s \n", hash.HashValue, hash.FileName)
 		case <-ctx.Done():
 			log.Println("request canceled by context")
 			os.Exit(1)
-			return
+			return nil
 		}
 	}
+	return result
 }

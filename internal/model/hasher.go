@@ -12,6 +12,6 @@ type PostgresConfig struct {
 type Hasher struct {
 	FileName  string `db:"file_name"`
 	FilePath  string `db:"file_path"`
-	HashValue string `db:"hash_value"`
+	HashValue []byte `db:"hash_value"`
 	HashType  string `db:"hash_type"`
 }
