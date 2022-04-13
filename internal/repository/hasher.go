@@ -37,9 +37,8 @@ func (r *HasherRepository) SaveHash(input model.Hasher) error {
 }
 
 func (r *HasherRepository) SaveDirectoryHash(input []model.Hasher) error {
-	//just for test
-	//for _, hash := range input {
-	//	r.SaveHash(hash)
-	//}
+	for _, hash := range input {
+		r.SaveHash(hash)
+	}
 	return nil
 }
