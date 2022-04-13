@@ -11,14 +11,13 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"sha256sum/internal/model"
 	"sync"
 
 	"sha256sum/internal/utils"
 )
 
 // FileHash - function to get file hash sum
-func FileHash(path, hashType string) (*model.Hasher, error) {
+func FileHash(path, hashType string) (*FileInfo, error) {
 	file, err := os.Open(path)
 
 	if err != nil {
@@ -27,7 +26,7 @@ func FileHash(path, hashType string) (*model.Hasher, error) {
 
 	defer file.Close()
 
-	data := model.Hasher{
+	data := FileInfo{
 		FileName: filepath.Base(path),
 		FilePath: path,
 		HashType: hashType,
@@ -77,7 +76,7 @@ func LookUpManager(inputPath string, paths chan string) {
 }
 
 // Hasher - function to get all files hashes from directory
-func Hasher(wg *sync.WaitGroup, paths <-chan string, hashes chan<- model.Hasher, hashType string) {
+func Hasher(wg *sync.WaitGroup, paths <-chan string, hashes chan<- FileInfo, hashType string) {
 	defer wg.Done()
 	for path := range paths {
 		hash, err := FileHash(path, hashType)
@@ -89,7 +88,7 @@ func Hasher(wg *sync.WaitGroup, paths <-chan string, hashes chan<- model.Hasher,
 }
 
 // Sha256sum - main function which init our workers pool
-func Sha256sum(paths chan string, hashes chan model.Hasher, hashType string) {
+func Sha256sum(paths chan string, hashes chan FileInfo, hashType string) {
 	var wg sync.WaitGroup
 	for worker := 1; worker <= runtime.NumCPU(); worker++ {
 		wg.Add(1)
@@ -100,8 +99,8 @@ func Sha256sum(paths chan string, hashes chan model.Hasher, hashType string) {
 }
 
 // PrintResult - output function
-func PrintResult(ctx context.Context, hashes chan model.Hasher) []model.Hasher {
-	var result []model.Hasher
+func PrintResult(ctx context.Context, hashes chan FileInfo) []FileInfo {
+	var result []FileInfo
 	for {
 		select {
 		case hash, ok := <-hashes:

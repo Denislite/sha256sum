@@ -3,7 +3,7 @@ package repository
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"sha256sum/internal/model"
+	"sha256sum/pkg/hash"
 )
 
 type HasherRepository struct {
@@ -14,7 +14,7 @@ func NewHasherRepository(db *sqlx.DB) *HasherRepository {
 	return &HasherRepository{db: db}
 }
 
-func (r *HasherRepository) SaveHash(input model.Hasher) error {
+func (r *HasherRepository) SaveHash(input hash.FileInfo) error {
 	tx, err := r.db.Begin()
 
 	if err != nil {
@@ -36,7 +36,7 @@ func (r *HasherRepository) SaveHash(input model.Hasher) error {
 	return tx.Commit()
 }
 
-func (r *HasherRepository) SaveDirectoryHash(input []model.Hasher) error {
+func (r *HasherRepository) SaveDirectoryHash(input []hash.FileInfo) error {
 	for _, hash := range input {
 		r.SaveHash(hash)
 	}
