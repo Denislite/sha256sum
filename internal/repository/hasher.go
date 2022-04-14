@@ -23,13 +23,10 @@ func (r *HasherRepository) SaveHash(input hashsum.FileInfo) error {
 
 	query := fmt.Sprintf(`INSERT INTO files (file_name, file_path, hash_value, hash_type) VALUES
     	($1, $2, $3, $4) ON CONFLICT ON CONSTRAINT 
-		files_unique DO UPDATE SET hash_value=excluded.hash_value RETURNING id;`)
+		files_unique DO UPDATE SET hash_value=excluded.hash_value`)
 
-	var id string
-	row := tx.QueryRow(query, input.FileName, input.FilePath,
-		fmt.Sprintf("%x", input.HashValue), input.HashType)
+	_, err = tx.Exec(query, input.FileName, input.FilePath, fmt.Sprintf("%x", input.HashValue), input.HashType)
 
-	err = row.Scan(&id)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -39,8 +36,24 @@ func (r *HasherRepository) SaveHash(input hashsum.FileInfo) error {
 }
 
 func (r *HasherRepository) SaveDirectoryHash(input []hashsum.FileInfo) error {
-	for _, hash := range input {
-		r.SaveHash(hash)
+	tx, err := r.db.Begin()
+
+	if err != nil {
+		return err
 	}
-	return nil
+
+	query := fmt.Sprintf(`INSERT INTO files (file_name, file_path, hash_value, hash_type) VALUES
+    	($1, $2, $3, $4) ON CONFLICT ON CONSTRAINT 
+		files_unique DO UPDATE SET hash_value=excluded.hash_value`)
+
+	for _, v := range input {
+		_, err := tx.Exec(query, v.FileName, v.FilePath, fmt.Sprintf("%x", v.HashValue), v.HashType)
+
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	return tx.Commit()
 }
