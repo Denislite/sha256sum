@@ -12,8 +12,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"sync"
-
-	"sha256sum/internal/utils"
 )
 
 // FileHash - function to get file hashsum sum
@@ -21,7 +19,7 @@ func FileHash(path, hashType string) (*FileInfo, error) {
 	file, err := os.Open(path)
 
 	if err != nil {
-		return nil, utils.ErrorWrongFile
+		return nil, ErrorWrongFile
 	}
 
 	defer file.Close()
@@ -49,7 +47,7 @@ func FileHash(path, hashType string) (*FileInfo, error) {
 	}
 
 	if err != nil {
-		return nil, utils.ErrorHash
+		return nil, ErrorHash
 	}
 
 	return &data, nil
@@ -59,7 +57,7 @@ func FileHash(path, hashType string) (*FileInfo, error) {
 func LookUpManager(inputPath string, paths chan string) {
 	err := filepath.Walk(inputPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return utils.ErrorDirectoryRead
+			return ErrorDirectoryRead
 		}
 		if !info.IsDir() {
 			paths <- path
@@ -70,7 +68,7 @@ func LookUpManager(inputPath string, paths chan string) {
 	close(paths)
 
 	if err != nil {
-		log.Println(utils.ErrorDirectoryRead)
+		log.Println(err)
 		return
 	}
 }

@@ -19,8 +19,6 @@ var (
 	help     bool
 	ctx      context.Context
 	signals  chan os.Signal
-	paths    = make(chan string)
-	hashes   = make(chan string)
 )
 
 func init() {
