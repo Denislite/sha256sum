@@ -4,20 +4,14 @@ CREATE TABLE files
     file_name   VARCHAR,
     file_path   TEXT,
     hash_value  VARCHAR,
-    hash_type   VARCHAR
+    hash_type   VARCHAR,
+
+    CONSTRAINT files_unique UNIQUE (file_path, hash_type)
 );
 
-CREATE FUNCTION check_hash (VARCHAR, TEXT, VARCHAR, VARCHAR) RETURNS void
-AS $$
-BEGIN
-   IF NOT EXISTS (SELECT * FROM files
-				  WHERE file_path=$2
-                  AND hash_type=$4)
-   THEN
-        INSERT INTO files (file_name,file_path,hash_value,hash_type)
-        VALUES ($1, $2, $3, $4);
-   ELSE
-   		UPDATE files SET hash_value=$3 WHERE file_path=$2 AND hash_type=$4;
-   END IF;
-END;
-$$ LANGUAGE plpgsql;
+INSERT INTO files (file_name, file_path, hash_value, hash_type) VALUES
+    ('1.txt','1/1.txt','123','sha256'),
+    ('1.txt','1/1.txt','1234','sha512'),
+    ('2.txt','1/2.txt','123','sha256'),
+    ('3.txt','1/3.txt','123','sha256'),
+    ('3.txt','1/3.txt','1234','sha512');

@@ -21,7 +21,9 @@ func (r *HasherRepository) SaveHash(input hashsum.FileInfo) error {
 		return err
 	}
 
-	query := fmt.Sprintf(`SELECT check_hash($1, $2, $3, $4);`)
+	query := fmt.Sprintf(`INSERT INTO files (file_name, file_path, hash_value, hash_type) VALUES
+    	($1, $2, $3, $4) ON CONFLICT ON CONSTRAINT 
+		files_unique DO UPDATE SET hash_value=excluded.hash_value RETURNING id;`)
 
 	var id string
 	row := tx.QueryRow(query, input.FileName, input.FilePath,
