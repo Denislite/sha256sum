@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"sha256sum/internal/model"
 	"sha256sum/pkg/hashsum"
 )
 
@@ -56,4 +57,16 @@ func (r *HasherRepository) SaveDirectoryHash(input []hashsum.FileInfo) error {
 	}
 
 	return tx.Commit()
+}
+
+func (r *HasherRepository) CompareHash(input []hashsum.FileInfo, dirPath string) ([]model.ChangedFiles, error) {
+	tx, err := r.db.Begin()
+
+	if err != nil {
+		return nil, err
+	}
+
+	//TODO implement logic
+
+	return nil, tx.Commit()
 }

@@ -8,3 +8,10 @@ type PostgresConfig struct {
 	DBName   string `mapstructure:"dbname"`
 	SSLMode  string `mapstructure:"sslmode"`
 }
+
+type ChangedFiles struct {
+	FilePath string
+	OldHash  string
+	NewHash  string
+	Deleted  bool
+}

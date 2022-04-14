@@ -5,6 +5,7 @@ CREATE TABLE files
     file_path   TEXT,
     hash_value  VARCHAR,
     hash_type   VARCHAR,
+    deleted     BOOLEAN DEFAULT FALSE,
 
     CONSTRAINT files_unique UNIQUE (file_path, hash_type)
 );

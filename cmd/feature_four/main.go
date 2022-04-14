@@ -17,6 +17,7 @@ var (
 	path     string
 	hashType string
 	help     bool
+	check    bool
 	ctx      context.Context
 	signals  chan os.Signal
 )
@@ -25,6 +26,7 @@ func init() {
 	flag.StringVar(&dir, "d", "", "/example/.../dir/ || you can check hashsum sum by dir path")
 	flag.StringVar(&path, "f", "", "/example/.../text.txt || you can check hashsum sum by file path")
 	flag.StringVar(&hashType, "a", "", "available: md5, sha512 || default: sha256")
+	flag.BoolVar(&check, "c", false, "check old hash in db with new one")
 	flag.BoolVar(&help, "h", false, "|| you can read options")
 	flag.Parse()
 
@@ -65,9 +67,14 @@ func main() {
 		flag.Usage()
 
 	case len(dir) > 0:
-		err := s.Hasher.DirectoryHash(ctx, dir, hashType)
+		result, err := s.Hasher.DirectoryHash(ctx, dir, hashType, check)
 		if err != nil {
 			log.Println(err)
+		}
+		if len(result) > 0 {
+			for res := range result {
+				fmt.Println(res)
+			}
 		}
 	case len(path) > 0:
 		hash, err := s.Hasher.FileHash(path, hashType)
