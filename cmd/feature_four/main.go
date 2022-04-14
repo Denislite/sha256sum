@@ -24,8 +24,8 @@ var (
 )
 
 func init() {
-	flag.StringVar(&dir, "d", "", "/example/.../dir/ || you can check hash sum by dir path")
-	flag.StringVar(&path, "f", "", "/example/.../text.txt || you can check hash sum by file path")
+	flag.StringVar(&dir, "d", "", "/example/.../dir/ || you can check hashsum sum by dir path")
+	flag.StringVar(&path, "f", "", "/example/.../text.txt || you can check hashsum sum by file path")
 	flag.StringVar(&hashType, "a", "", "available: md5, sha512 || default: sha256")
 	flag.BoolVar(&help, "h", false, "|| you can read options")
 	flag.Parse()
@@ -77,7 +77,7 @@ func main() {
 			log.Println(err)
 			return
 		}
-		fmt.Printf("%x, %s \n", hash.HashValue, hash.FileName)
+		fmt.Printf("%x %s \n", hash.HashValue, hash.FileName)
 
 	default:
 		log.Println(utils.ErrorOption)

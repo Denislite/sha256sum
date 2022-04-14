@@ -1,4 +1,4 @@
-package hash
+package hashsum
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 	"sha256sum/internal/utils"
 )
 
-// FileHash - function to get file hash sum
+// FileHash - function to get file hashsum sum
 func FileHash(path, hashType string) (*FileInfo, error) {
 	file, err := os.Open(path)
 
@@ -75,8 +75,8 @@ func LookUpManager(inputPath string, paths chan string) {
 	}
 }
 
-// Hasher - function to get all files hashes from directory
-func Hasher(wg *sync.WaitGroup, paths <-chan string, hashes chan<- FileInfo, hashType string) {
+// hasher - function to get all files hashes from directory
+func hasher(wg *sync.WaitGroup, paths <-chan string, hashes chan<- FileInfo, hashType string) {
 	defer wg.Done()
 	for path := range paths {
 		hash, err := FileHash(path, hashType)
@@ -92,7 +92,7 @@ func Sha256sum(paths chan string, hashes chan FileInfo, hashType string) {
 	var wg sync.WaitGroup
 	for worker := 1; worker <= runtime.NumCPU(); worker++ {
 		wg.Add(1)
-		go Hasher(&wg, paths, hashes, hashType)
+		go hasher(&wg, paths, hashes, hashType)
 	}
 	defer close(hashes)
 	wg.Wait()

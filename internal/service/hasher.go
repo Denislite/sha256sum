@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"sha256sum/internal/repository"
-	"sha256sum/pkg/hash"
+	"sha256sum/pkg/hashsum"
 )
 
 type HasherService struct {
@@ -14,9 +14,9 @@ func NewHasherService(repo repository.Repository) *HasherService {
 	return &HasherService{repo: repo}
 }
 
-func (s HasherService) FileHash(path, hashType string) (*hash.FileInfo, error) {
+func (s HasherService) FileHash(path, hashType string) (*hashsum.FileInfo, error) {
 
-	value, err := hash.FileHash(path, hashType)
+	value, err := hashsum.FileHash(path, hashType)
 
 	if err != nil {
 		return nil, err
@@ -33,11 +33,11 @@ func (s HasherService) FileHash(path, hashType string) (*hash.FileInfo, error) {
 
 func (s HasherService) DirectoryHash(ctx context.Context, path, hashType string) error {
 	paths := make(chan string)
-	hashes := make(chan hash.FileInfo)
+	hashes := make(chan hashsum.FileInfo)
 
-	go hash.Sha256sum(paths, hashes, hashType)
-	go hash.LookUpManager(path, paths)
-	value := hash.PrintResult(ctx, hashes)
+	go hashsum.Sha256sum(paths, hashes, hashType)
+	go hashsum.LookUpManager(path, paths)
+	value := hashsum.PrintResult(ctx, hashes)
 
 	err := s.repo.SaveDirectoryHash(value)
 	if err != nil {

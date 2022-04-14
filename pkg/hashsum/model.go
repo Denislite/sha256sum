@@ -1,4 +1,4 @@
-package hash
+package hashsum
 
 type FileInfo struct {
 	FileName  string `db:"file_name"`

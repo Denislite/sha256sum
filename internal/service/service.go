@@ -3,11 +3,11 @@ package service
 import (
 	"context"
 	"sha256sum/internal/repository"
-	"sha256sum/pkg/hash"
+	"sha256sum/pkg/hashsum"
 )
 
 type Hasher interface {
-	FileHash(path, hashType string) (*hash.FileInfo, error)
+	FileHash(path, hashType string) (*hashsum.FileInfo, error)
 	DirectoryHash(ctx context.Context, path, hashType string) error
 }
 

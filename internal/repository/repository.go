@@ -2,12 +2,12 @@ package repository
 
 import (
 	"github.com/jmoiron/sqlx"
-	"sha256sum/pkg/hash"
+	"sha256sum/pkg/hashsum"
 )
 
 type Hasher interface {
-	SaveHash(input hash.FileInfo) error
-	SaveDirectoryHash(input []hash.FileInfo) error
+	SaveHash(input hashsum.FileInfo) error
+	SaveDirectoryHash(input []hashsum.FileInfo) error
 }
 
 type Repository struct {

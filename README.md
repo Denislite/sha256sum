@@ -30,3 +30,14 @@ Now you can use sha256, sha512, md5 (default sha256)
 ```
     go run cmd/feature_{last_num}/main.go -h
 ```
+---
+## hashsum pkg:
+view documentation with
+```
+    go doc hashsum
+```
+or
+```
+    godoc -http :6060 // you can use other ports
+```
+like HTML page
