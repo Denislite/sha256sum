@@ -9,7 +9,8 @@ import (
 
 type Hasher interface {
 	FileHash(path, hashType string) (*hashsum.FileInfo, error)
-	DirectoryHash(ctx context.Context, path, hashType string, check bool) ([]model.ChangedFiles, error)
+	DirectoryHash(ctx context.Context, path, hashType string) error
+	CompareHash(path, hashType string) ([]model.ChangedFiles, error)
 }
 
 type Service struct {
