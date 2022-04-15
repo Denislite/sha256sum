@@ -10,8 +10,13 @@ type PostgresConfig struct {
 }
 
 type ChangedFiles struct {
-	FilePath string
+	FileName string
 	OldHash  string
 	NewHash  string
-	Deleted  bool
+}
+
+type DeletedFiles struct {
+	FileName string
+	OldHash  string
+	FilePath string
 }

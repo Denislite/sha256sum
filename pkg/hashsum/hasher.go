@@ -34,15 +34,15 @@ func FileHash(path, hashType string) (*FileInfo, error) {
 	case "md5":
 		hash := md5.New()
 		_, err = io.Copy(hash, file)
-		data.HashValue = hash.Sum(nil)
+		data.HashValue = fmt.Sprintf("%x", hash.Sum(nil))
 	case "sha512":
 		hash := sha512.New()
 		_, err = io.Copy(hash, file)
-		data.HashValue = hash.Sum(nil)
+		data.HashValue = fmt.Sprintf("%x", hash.Sum(nil))
 	default:
 		hash := sha256.New()
 		_, err = io.Copy(hash, file)
-		data.HashValue = hash.Sum(nil)
+		data.HashValue = fmt.Sprintf("%x", hash.Sum(nil))
 		data.HashType = "sha256"
 	}
 
@@ -106,7 +106,6 @@ func PrintResult(ctx context.Context, hashes chan FileInfo) []FileInfo {
 				return result
 			}
 			result = append(result, hash)
-			fmt.Printf("%x %s \n", hash.HashValue, hash.FileName)
 		case <-ctx.Done():
 			log.Println("request canceled by context")
 			os.Exit(1)

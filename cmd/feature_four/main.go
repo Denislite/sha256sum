@@ -25,7 +25,7 @@ var (
 func init() {
 	flag.StringVar(&dir, "d", "", "/example/.../dir/ || you can check hashsum sum by dir path")
 	flag.StringVar(&path, "f", "", "/example/.../text.txt || you can check hashsum sum by file path")
-	flag.StringVar(&hashType, "a", "", "available: md5, sha512 || default: sha256")
+	flag.StringVar(&hashType, "a", "sha256", "available: md5, sha512 || default: sha256")
 	flag.StringVar(&check, "check", "", "check old hash in db with new one")
 	flag.BoolVar(&help, "h", false, "|| you can read options")
 	flag.Parse()
@@ -67,18 +67,38 @@ func main() {
 		flag.Usage()
 
 	case len(dir) > 0:
-		err := s.Hasher.DirectoryHash(ctx, dir, hashType)
+		result, err := s.Hasher.DirectoryHash(ctx, dir, hashType)
 		if err != nil {
 			log.Println(err)
 		}
+		for _, hash := range result {
+			fmt.Printf("%s %s \n", hash.HashValue, hash.FileName)
+		}
+
 	case len(path) > 0:
 		hash, err := s.Hasher.FileHash(path, hashType)
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		fmt.Printf("%x %s \n", hash.HashValue, hash.FileName)
+		fmt.Printf("%s %s \n", hash.HashValue, hash.FileName)
 
+	case len(check) > 0:
+		resultHash, resultDeleted, err := s.Hasher.CompareHash(ctx, check, hashType)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		fmt.Println("files hash changes:")
+		for _, hash := range resultHash {
+			fmt.Printf("%s %s || %s \n",
+				hash.FileName, hash.OldHash, hash.NewHash)
+		}
+		fmt.Println("deleted files:")
+		for _, del := range resultDeleted {
+			fmt.Printf("%s %s \n",
+				del.FileName, del.OldHash)
+		}
 	default:
 		log.Println(utils.ErrorOption)
 	}

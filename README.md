@@ -30,6 +30,16 @@ Now you can use sha256, sha512, md5 (default sha256)
 ```
     go run cmd/feature_{last_num}/main.go -h
 ```
+
+5. -check (compare new and old hashes):
+```
+    go run cmd/feature_{last_num}/main.go -check /base/.../dir/
+```
+Also, you can use -a flag with that
+```
+    go run cmd/feature_{last_num}/main.go -check /base/.../dir/ -a md5
+```
+
 ---
 ## hashsum pkg:
 view documentation with

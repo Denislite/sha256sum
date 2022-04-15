@@ -16,24 +16,18 @@ func NewHasherRepository(db *sqlx.DB) *HasherRepository {
 }
 
 func (r *HasherRepository) SaveHash(input hashsum.FileInfo) error {
-	tx, err := r.db.Begin()
-
-	if err != nil {
-		return err
-	}
 
 	query := fmt.Sprintf(`INSERT INTO files (file_name, file_path, hash_value, hash_type) VALUES
     	($1, $2, $3, $4) ON CONFLICT ON CONSTRAINT 
 		files_unique DO UPDATE SET hash_value=excluded.hash_value`)
 
-	_, err = tx.Exec(query, input.FileName, input.FilePath, fmt.Sprintf("%x", input.HashValue), input.HashType)
+	_, err := r.db.Exec(query, input.FileName, input.FilePath, input.HashValue, input.HashType)
 
 	if err != nil {
-		tx.Rollback()
 		return err
 	}
 
-	return tx.Commit()
+	return nil
 }
 
 func (r *HasherRepository) SaveDirectoryHash(input []hashsum.FileInfo) error {
@@ -48,7 +42,7 @@ func (r *HasherRepository) SaveDirectoryHash(input []hashsum.FileInfo) error {
 		files_unique DO UPDATE SET hash_value=excluded.hash_value`)
 
 	for _, v := range input {
-		_, err := tx.Exec(query, v.FileName, v.FilePath, fmt.Sprintf("%x", v.HashValue), v.HashType)
+		_, err := tx.Exec(query, v.FileName, v.FilePath, v.HashValue, v.HashType)
 
 		if err != nil {
 			tx.Rollback()
@@ -59,14 +53,38 @@ func (r *HasherRepository) SaveDirectoryHash(input []hashsum.FileInfo) error {
 	return tx.Commit()
 }
 
-func (r *HasherRepository) CompareHash(input []hashsum.FileInfo, dirPath string) ([]model.ChangedFiles, error) {
-	tx, err := r.db.Begin()
+func (r *HasherRepository) CompareHash(dirPath, hashType string) ([]hashsum.FileInfo, error) {
+	var result []hashsum.FileInfo
+
+	query := fmt.Sprintf(`SELECT file_name, file_path, hash_value, hash_type, deleted 
+		FROM files WHERE file_path like $1 AND hash_type = $2`)
+
+	err := r.db.Select(&result, query, "%"+dirPath+"%", hashType)
 
 	if err != nil {
 		return nil, err
 	}
 
-	//TODO implement logic
+	return result, nil
+}
 
-	return nil, tx.Commit()
+func (r *HasherRepository) DeletedItemUpdate(input []model.DeletedFiles, hashType string) error {
+	tx, err := r.db.Begin()
+
+	if err != nil {
+		return err
+	}
+
+	query := fmt.Sprintf(`UPDATE files SET deleted = true WHERE file_path=$1 AND hash_type=$2`)
+
+	for _, v := range input {
+		_, err := tx.Exec(query, v.FilePath, hashType)
+
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	return tx.Commit()
 }
