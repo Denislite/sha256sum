@@ -10,7 +10,8 @@ import (
 type Hasher interface {
 	FileHash(path, hashType string) (*hashsum.FileInfo, error)
 	DirectoryHash(ctx context.Context, path, hashType string) ([]hashsum.FileInfo, error)
-	CompareHash(ctx context.Context, path, hashType string) ([]model.ChangedFiles, []model.DeletedFiles, error)
+	CompareHash(ctx context.Context, path, hashType string) ([]model.ChangedFiles, error)
+	CheckDeleted(ctx context.Context, path, hashType string) ([]model.DeletedFiles, error)
 }
 
 type Service struct {

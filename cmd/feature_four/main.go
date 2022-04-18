@@ -17,6 +17,7 @@ var (
 	path     string
 	hashType string
 	check    string
+	deleted  string
 	help     bool
 	ctx      context.Context
 	signals  chan os.Signal
@@ -27,6 +28,7 @@ func init() {
 	flag.StringVar(&path, "f", "", "/example/.../text.txt || you can check hashsum sum by file path")
 	flag.StringVar(&hashType, "a", "sha256", "available: md5, sha512 || default: sha256")
 	flag.StringVar(&check, "check", "", "check old hash in db with new one")
+	flag.StringVar(&deleted, "deleted", "", "check deleted files if dir")
 	flag.BoolVar(&help, "h", false, "|| you can read options")
 	flag.Parse()
 
@@ -84,20 +86,26 @@ func main() {
 		fmt.Printf("%s %s \n", hash.HashValue, hash.FileName)
 
 	case len(check) > 0:
-		resultHash, resultDeleted, err := s.Hasher.CompareHash(ctx, check, hashType)
+		resultHash, err := s.Hasher.CompareHash(ctx, check, hashType)
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		fmt.Println("files hash changes:")
+		fmt.Println("files hash changes (old/new):")
 		for _, hash := range resultHash {
 			fmt.Printf("%s %s || %s \n",
 				hash.FileName, hash.OldHash, hash.NewHash)
 		}
+
+	case len(deleted) > 0:
+		resultFiles, err := s.Hasher.CheckDeleted(ctx, deleted, hashType)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 		fmt.Println("deleted files:")
-		for _, del := range resultDeleted {
-			fmt.Printf("%s %s \n",
-				del.FileName, del.OldHash)
+		for _, files := range resultFiles {
+			fmt.Printf("%s %s \n", files.FilePath, files.OldHash)
 		}
 	default:
 		log.Println(utils.ErrorOption)

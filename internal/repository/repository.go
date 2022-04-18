@@ -9,8 +9,8 @@ import (
 type Hasher interface {
 	SaveHash(input hashsum.FileInfo) error
 	SaveDirectoryHash(input []hashsum.FileInfo) error
-	CompareHash(dirPath, hashType string) ([]hashsum.FileInfo, error)
-	DeletedItemUpdate(input []model.DeletedFiles, hashType string) error
+	GetFilesInfo(dirPath, hashType string) ([]hashsum.FileInfo, error)
+	DeletedItemUpdate(input []model.DeletedFiles) error
 }
 
 type Repository struct {

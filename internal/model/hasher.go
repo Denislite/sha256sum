@@ -16,7 +16,6 @@ type ChangedFiles struct {
 }
 
 type DeletedFiles struct {
-	FileName string
 	OldHash  string
 	FilePath string
 }

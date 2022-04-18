@@ -41,7 +41,7 @@ func (s HasherService) DirectoryHash(ctx context.Context, path, hashType string)
 	return result, err
 }
 
-func (s HasherService) CompareHash(ctx context.Context, path, hashType string) ([]model.ChangedFiles, []model.DeletedFiles, error) {
+func (s HasherService) CompareHash(ctx context.Context, path, hashType string) ([]model.ChangedFiles, error) {
 	paths := make(chan string)
 	hashes := make(chan hashsum.FileInfo)
 
@@ -49,40 +49,58 @@ func (s HasherService) CompareHash(ctx context.Context, path, hashType string) (
 	go hashsum.LookUpManager(path, paths)
 	newHashes := hashsum.PrintResult(ctx, hashes)
 
-	oldHashes, err := s.repo.CompareHash(path, hashType)
+	oldHashes, err := s.repo.GetFilesInfo(path, hashType)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	var resultsHash []model.ChangedFiles
-	var resultsDeleted []model.DeletedFiles
-	var checker bool
 
 	for _, oldHash := range oldHashes {
-		checker = false
 		for _, newHash := range newHashes {
-			if oldHash.FilePath == newHash.FilePath {
-				if oldHash.HashValue != newHash.HashValue {
-					resultsHash = append(resultsHash, model.ChangedFiles{
-						FileName: oldHash.FileName,
-						OldHash:  oldHash.HashValue,
-						NewHash:  newHash.HashValue,
-					})
-				}
-				checker = true
-				break
+			if oldHash.FilePath == newHash.FilePath && oldHash.HashValue != newHash.HashValue {
+				resultsHash = append(resultsHash, model.ChangedFiles{
+					FileName: oldHash.FileName,
+					OldHash:  oldHash.HashValue,
+					NewHash:  newHash.HashValue,
+				})
 			}
 		}
-		if !checker {
-			resultsDeleted = append(resultsDeleted, model.DeletedFiles{
-				FileName: oldHash.FileName,
-				OldHash:  oldHash.HashValue,
-				FilePath: oldHash.FilePath,
+	}
+
+	return resultsHash, err
+}
+
+func (s HasherService) CheckDeleted(ctx context.Context, path, hashType string) ([]model.DeletedFiles, error) {
+	paths := make(chan string)
+	hashes := make(chan hashsum.FileInfo)
+
+	go hashsum.Sha256sum(paths, hashes, hashType)
+	go hashsum.LookUpManager(path, paths)
+	newHashes := hashsum.PrintResult(ctx, hashes)
+
+	oldHashes, err := s.repo.GetFilesInfo(path, hashType)
+	if err != nil {
+		return nil, err
+	}
+
+	deletedFiles := make(map[string]struct{}, len(newHashes))
+	for _, value := range newHashes {
+		deletedFiles[value.FilePath] = struct{}{}
+	}
+
+	var result []model.DeletedFiles
+
+	for _, value := range oldHashes {
+		if _, ok := deletedFiles[value.FilePath]; !ok {
+			result = append(result, model.DeletedFiles{
+				FilePath: value.FilePath,
+				OldHash:  value.HashValue,
 			})
 		}
 	}
 
-	err = s.repo.DeletedItemUpdate(resultsDeleted, hashType)
+	err = s.repo.DeletedItemUpdate(result)
 
-	return resultsHash, resultsDeleted, err
+	return result, err
 }
