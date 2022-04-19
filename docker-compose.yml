@@ -1,0 +1,21 @@
+version: '3.3'
+services:
+  todo-app:
+    build: ./
+    depends_on:
+      - postgres
+    environment:
+      - DB_PASSWORD=qwerty
+  postgres:
+    container_name: postgres_container
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: hasher
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./sql/000001_sql.up.sql:/docker-entrypoint-initdb.d/000001_sql.up.sql
+      - ./postgres-data:/var/lib/postgresql/data
