@@ -57,6 +57,7 @@ func main() {
 	db, err := repository.NewPostgresDB(cfg)
 	if err != nil {
 		log.Println(utils.ErrorDBConnection)
+		return
 	}
 
 	r := repository.NewRepository(db)
