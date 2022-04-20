@@ -5,12 +5,12 @@ The sha256sum command computes and checks a SHA256 encrypted message digest.
 
 ---
 ## Installation:
-via Golang
+install app
 ```
     go mod download
     go build cmd/main.go
 ```
-via Docker
+run database
 ```
     docker-compose build
     docker-compose up

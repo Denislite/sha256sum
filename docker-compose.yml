@@ -1,9 +1,5 @@
 version: '3.3'
 services:
-  hasher:
-    build: ./
-    depends_on:
-      - postgres
   postgres:
     container_name: postgres_container
     image: postgres:latest
