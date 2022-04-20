@@ -4,8 +4,6 @@ services:
     build: ./
     depends_on:
       - postgres
-    environment:
-      - DB_PASSWORD=qwerty
   postgres:
     container_name: postgres_container
     image: postgres:latest
@@ -15,7 +13,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - ./schema/000001_sql.up.schema:/docker-entrypoint-initdb.d/000001_sql.up.schema
       - ./postgres-data:/var/lib/postgresql/data
