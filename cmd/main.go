@@ -72,10 +72,12 @@ func main() {
 		result, err := s.Hasher.DirectoryHash(ctx, dir, hashType)
 		if err != nil {
 			log.Println(err)
+			return
 		}
 		for _, hash := range result {
 			fmt.Printf("%s %s \n", hash.HashValue, hash.FileName)
 		}
+		return
 
 	case len(path) > 0:
 		hash, err := s.Hasher.FileHash(path, hashType)
@@ -84,6 +86,7 @@ func main() {
 			return
 		}
 		fmt.Printf("%s %s \n", hash.HashValue, hash.FileName)
+		return
 
 	case len(check) > 0:
 		resultHash, err := s.Hasher.CompareHash(ctx, check, hashType)
@@ -96,6 +99,7 @@ func main() {
 			fmt.Printf("%s %s || %s \n",
 				hash.FileName, hash.OldHash, hash.NewHash)
 		}
+		return
 
 	case len(deleted) > 0:
 		resultFiles, err := s.Hasher.CheckDeleted(ctx, deleted, hashType)
@@ -107,6 +111,8 @@ func main() {
 		for _, files := range resultFiles {
 			fmt.Printf("%s %s \n", files.FilePath, files.OldHash)
 		}
+		return
+
 	default:
 		log.Println(utils.ErrorOption)
 	}
