@@ -51,13 +51,12 @@ func main() {
 
 	cfg, err := configs.ParseConfigFile("./internal/configs")
 	if err != nil {
-		log.Println(utils.ErrorConfig)
+		log.Fatalln(utils.ErrorConfig)
 	}
 
 	db, err := repository.NewPostgresDB(cfg)
 	if err != nil {
-		log.Println(utils.ErrorDBConnection)
-		return
+		log.Fatalln(utils.ErrorDBConnection)
 	}
 
 	r := repository.NewRepository(db)
