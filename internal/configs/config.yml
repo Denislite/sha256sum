@@ -1,0 +1,7 @@
+db:
+  port: 5434
+  host: localhost
+  username: postgres
+  password: denisLITE
+  dbname: hasher
+  sslmode: disable
