@@ -4,7 +4,7 @@ Implementation on Golang.<br>
 The sha256sum command computes and checks a SHA256 encrypted message digest.
 
 ---
-## Installation:
+## :hammer: Installation:
 install app
 ```
     go mod download
@@ -17,7 +17,7 @@ run database
 ```
 
 ---
-## Usage:
+## :floppy_disk: Usage:
 
 You can use it with option like:
 1. -f (path to file):
@@ -49,7 +49,7 @@ Also, you can use -a flag with that
 ```
 
 ---
-## hashsum pkg:
+## :mag_right: hashsum pkg:
 view documentation with
 ```
     go doc hashsum
