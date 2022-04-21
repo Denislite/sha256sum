@@ -20,9 +20,11 @@ func TestFileHash(t *testing.T) {
 		got, err := hashsum.FileHash(c.path, c.hashType)
 		if err != nil {
 			t.Error(err)
+			return
 		}
 		if got.HashValue != c.want {
 			t.Errorf(".Expected %s, got %s", c.want, got.HashValue)
+			return
 		}
 	}
 }
