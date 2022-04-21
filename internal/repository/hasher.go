@@ -17,7 +17,7 @@ func NewHasherRepository(db *sqlx.DB) *HasherRepository {
 
 func (r *HasherRepository) SaveHash(input hashsum.FileInfo) error {
 
-	query := fmt.Sprintf(`INSERT INTO files (file_name, file_path, hash_value, hash_type) VALUES
+	query := fmt.Sprintf(`INSERT INTO testfiles (file_name, file_path, hash_value, hash_type) VALUES
     	($1, $2, $3, $4) ON CONFLICT ON CONSTRAINT 
 		files_unique DO UPDATE SET hash_value=excluded.hash_value`)
 
@@ -37,7 +37,7 @@ func (r *HasherRepository) SaveDirectoryHash(input []hashsum.FileInfo) error {
 		return err
 	}
 
-	query := fmt.Sprintf(`INSERT INTO files (file_name, file_path, hash_value, hash_type) VALUES
+	query := fmt.Sprintf(`INSERT INTO testfiles (file_name, file_path, hash_value, hash_type) VALUES
     	($1, $2, $3, $4) ON CONFLICT ON CONSTRAINT 
 		files_unique DO UPDATE SET hash_value=excluded.hash_value`)
 
@@ -57,7 +57,7 @@ func (r *HasherRepository) GetFilesInfo(dirPath, hashType string) ([]hashsum.Fil
 	var result []hashsum.FileInfo
 
 	query := fmt.Sprintf(`SELECT file_name, file_path, hash_value, hash_type, deleted 
-		FROM files WHERE file_path like $1 AND hash_type = $2`)
+		FROM testfiles WHERE file_path like $1 AND hash_type = $2`)
 
 	err := r.db.Select(&result, query, "%"+dirPath+"%", hashType)
 
@@ -75,7 +75,7 @@ func (r *HasherRepository) DeletedItemUpdate(input []model.DeletedFiles) error {
 		return err
 	}
 
-	query := fmt.Sprintf(`UPDATE files SET deleted = true WHERE file_path=$1`)
+	query := fmt.Sprintf(`UPDATE testfiles SET deleted = true WHERE file_path=$1`)
 
 	for _, v := range input {
 		_, err := tx.Exec(query, v.FilePath)

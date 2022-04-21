@@ -29,7 +29,7 @@ func CheckSignal(signals chan os.Signal) {
 	go func() {
 		for sig := range signals {
 			log.Printf("request canceled by signal %d \n", sig)
-			os.Exit(1)
+			os.Exit(0)
 		}
 	}()
 }
