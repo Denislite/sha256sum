@@ -1,0 +1,15 @@
+version: '3.3'
+services:
+  postgres:
+    container_name: postgres_container
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: hasher
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./schema/000001_sql.up.schema:/docker-entrypoint-initdb.d/000001_sql.up.schema
+      - ./postgres-data:/var/lib/postgresql/data
