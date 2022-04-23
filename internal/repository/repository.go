@@ -3,13 +3,12 @@ package repository
 import (
 	"github.com/jmoiron/sqlx"
 	"sha256sum/internal/model"
-	"sha256sum/pkg/hashsum"
 )
 
 type Hasher interface {
-	SaveHash(input hashsum.FileInfo) error
-	SaveDirectoryHash(input []hashsum.FileInfo) error
-	GetFilesInfo(dirPath, hashType string) ([]hashsum.FileInfo, error)
+	SaveHash(input model.FileInfo) error
+	SaveDirectoryHash(input []model.FileInfo) error
+	GetFilesInfo(dirPath, hashType string) ([]model.FileInfo, error)
 	DeletedItemUpdate(input []model.DeletedFiles) error
 }
 
