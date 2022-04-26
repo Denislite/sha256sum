@@ -11,5 +11,9 @@ services:
     ports:
       - "5434:5432"
     volumes:
-      - ./schema/000001_sql.up.schema:/docker-entrypoint-initdb.d/000001_sql.up.schema
+      - ./schema/000001_sql.up.sql:/docker-entrypoint-initdb.d/000001_sql.up.sql
       - ./postgres-data:/var/lib/postgresql/data
+  hasher:
+    build: ./
+    depends_on:
+      - postgres

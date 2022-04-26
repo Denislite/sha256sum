@@ -1,6 +1,6 @@
 db:
-  port: 5434
-  host: localhost
+  port: 5432
+  host: postgres
   username: postgres
   password: denisLITE
   dbname: hasher
