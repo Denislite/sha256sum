@@ -17,3 +17,7 @@ services:
     build: ./
     depends_on:
       - postgres
+    volumes:
+      - /:/local
+volumes:
+  hasher:
