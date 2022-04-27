@@ -19,5 +19,3 @@ services:
       - postgres
     volumes:
       - /:/local
-volumes:
-  hasher:
