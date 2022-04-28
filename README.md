@@ -20,6 +20,8 @@ configure .env file with your dir path
 ```
     go mod download
     go build cmd/main.go
+        or
+    ./build.sh {your_os} // win32, win64, linux32, linux64, osx32, osx64
 ```
 ---
 ## :floppy_disk: Usage:
