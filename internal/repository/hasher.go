@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"sha256sum/internal/model"
-	"sha256sum/pkg/hashsum"
 )
 
 type HasherRepository struct {
@@ -15,7 +14,7 @@ func NewHasherRepository(db *sqlx.DB) *HasherRepository {
 	return &HasherRepository{db: db}
 }
 
-func (r *HasherRepository) SaveHash(input hashsum.FileInfo) error {
+func (r *HasherRepository) SaveHash(input model.FileInfo) error {
 
 	query := fmt.Sprintf(`INSERT INTO files (file_name, file_path, hash_value, hash_type) VALUES
     	($1, $2, $3, $4) ON CONFLICT ON CONSTRAINT 
@@ -30,7 +29,7 @@ func (r *HasherRepository) SaveHash(input hashsum.FileInfo) error {
 	return nil
 }
 
-func (r *HasherRepository) SaveDirectoryHash(input []hashsum.FileInfo) error {
+func (r *HasherRepository) SaveDirectoryHash(input []model.FileInfo) error {
 	tx, err := r.db.Begin()
 
 	if err != nil {
@@ -53,8 +52,8 @@ func (r *HasherRepository) SaveDirectoryHash(input []hashsum.FileInfo) error {
 	return tx.Commit()
 }
 
-func (r *HasherRepository) GetFilesInfo(dirPath, hashType string) ([]hashsum.FileInfo, error) {
-	var result []hashsum.FileInfo
+func (r *HasherRepository) GetFilesInfo(dirPath, hashType string) ([]model.FileInfo, error) {
+	var result []model.FileInfo
 
 	query := fmt.Sprintf(`SELECT file_name, file_path, hash_value, hash_type, deleted 
 		FROM files WHERE file_path like $1 AND hash_type = $2`)
