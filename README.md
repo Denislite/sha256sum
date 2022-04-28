@@ -5,57 +5,66 @@ The sha256sum command computes and checks a SHA256 encrypted message digest.
 
 ---
 ## :hammer: Installation:
-install app
+
+1. Like Docker container: <br>
+configure .env file with your dir path
+```
+    DIR_PATH=YOUR_PATH_HERE
+```
+2. after build docker-compose
+```
+    docker-compose build
+    docker-compose up -d postgres
+```
+3. Also you can use application without docker
 ```
     go mod download
     go build cmd/main.go
 ```
-run database
-```
-    docker-compose build
-    docker-compose up
-```
-
 ---
 ## :floppy_disk: Usage:
 
 You can use it with option like:
-1. -f (path to file):
+1. **`-f`** (path to file):
 ```
-    go run cmd/main.go -f /base/.../dir/example.txt
+    docker-compose run hasher -f=/local/your_path/example.txt
+    go run cmd/main.go -f=/your_path/example.txt
 ```
-2. -d (path to dir):
+2. **`-d`** (path to dir):
 ```
-    go run cmd/main.go -d /base/.../dir/
+    docker-compose run hasher -d=/local/your_path/
+    go run cmd/main.go -d /your_path/
 ```
-3. -a (hash algorithm):
+3. **`-a`**(hash algorithm): <br>
+   Now you can use sha256, sha512, md5 (default sha256)
 ```
-    go run cmd/main.go -d /base/.../dir/ -a md5
+    docker-compose run hasher -d=/local/your_path/ -a=md5
+    go run cmd/main.go -d=/your_path/ -a=md5
 ```
-Now you can use sha256, sha512, md5 (default sha256)
 
-4. -h (options docs):
+4. **`-h`** (options docs):
 ```
+    docker-compose run hasher -h
     go run cmd/main.go -h
 ```
 
-5. -check (compare new and old hashes):
+5. **`-check`** (compare new and old hashes): <br>
+    Also, you can use **`-a`** flag with that
 ```
-    go run cmd/main.go -check /base/.../dir/
-```
-Also, you can use -a flag with that
-```
-    go run cmd/main.go -check /base/.../dir/ -a md5
+    docker-compose run hasher -check=/local/your_path/ -a=md5
+    go run cmd/main.go -check=/your_path/ -a=md5
 ```
 
+6. **`-deleted`** (check deleted files in your dir):
+```
+    docker-compose run hasher -deleted=/local/your_path/
+    go run cmd/main.go -deleted=/your_path/
+```
 ---
 ## :mag_right: hashsum pkg:
-view documentation with
+View documentation with
 ```
     go doc hashsum
-```
-or
-```
+        or
     godoc -http :6060 // you can use other ports
 ```
-like HTML page
