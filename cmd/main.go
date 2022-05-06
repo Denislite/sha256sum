@@ -61,7 +61,7 @@ func main() {
 
 	r := repository.NewRepository(db)
 
-	s := service.NewService(r)
+	s := service.NewService(r, hashType)
 
 	switch {
 	case help:
@@ -69,7 +69,7 @@ func main() {
 		flag.Usage()
 
 	case len(dir) > 0:
-		result, err := s.Hasher.DirectoryHash(ctx, dir, hashType)
+		result, err := s.Hasher.DirectoryHash(ctx, dir)
 		if err != nil {
 			log.Println(err)
 			return
@@ -80,7 +80,7 @@ func main() {
 		return
 
 	case len(path) > 0:
-		hash, err := s.Hasher.FileHash(path, hashType)
+		hash, err := s.Hasher.FileHash(path)
 		if err != nil {
 			log.Println(err)
 			return
@@ -89,7 +89,7 @@ func main() {
 		return
 
 	case len(check) > 0:
-		resultHash, err := s.Hasher.CompareHash(ctx, check, hashType)
+		resultHash, err := s.Hasher.CompareHash(ctx, check)
 		if err != nil {
 			log.Println(err)
 			return
@@ -102,7 +102,7 @@ func main() {
 		return
 
 	case len(deleted) > 0:
-		resultFiles, err := s.Hasher.CheckDeleted(ctx, deleted, hashType)
+		resultFiles, err := s.Hasher.CheckDeleted(ctx, deleted)
 		if err != nil {
 			log.Println(err)
 			return
