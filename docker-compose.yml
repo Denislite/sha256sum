@@ -19,5 +19,5 @@ services:
       - .env
     depends_on:
       - postgres
-    volumes:
-      - ${DIR_PATH}:/local
+#    volumes:
+#      - ${DIR_PATH}:/local

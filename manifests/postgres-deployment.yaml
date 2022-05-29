@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fullstack-postgres
+  labels:
+    app: fullstack-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fullstack-postgres
+      tier: postgres
+  template:
+    metadata:
+      labels:
+        app: fullstack-postgres
+        tier: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:latest
+          imagePullPolicy: "IfNotPresent"
+#          lifecycle:
+#            postStart:
+#              exec:
+#                command: [ TODO: bash script here ]
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+
+          ports:
+            - containerPort: 5432
+              name: postgres

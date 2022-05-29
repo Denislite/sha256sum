@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hasher
+  labels:
+    app: hasher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hasher
+  template:
+    metadata:
+      labels:
+        app: hasher
+    spec:
+      containers:
+        - name: hasher
+          image: hasher:latest
+          imagePullPolicy: Never
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+          command: ["sh","-c","./sha256sum $FLAG $TEXT"]
+          env:
+            - name: FLAG
+              value: "-d"
+        - name: sidecar
+          image: hasher:latest
+          imagePullPolicy: Never
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+          command: [ "sh","-c","./sha256sum $FLAG $TEXT" ]
+          env:
+            - name: FLAG
+              value: "-c"

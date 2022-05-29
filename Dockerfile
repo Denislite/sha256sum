@@ -8,6 +8,7 @@ RUN chmod +x sha256sum
 
 FROM alpine:latest
 WORKDIR /app
-COPY --from=buildenv /sha256sum .
+COPY --from=buildenv /sha256sum/sha256sum .
+COPY --from=buildenv /sha256sum/.env .
 
-ENTRYPOINT ["/app/sha256sum"]
+CMD ["sh","-c","./sha256sum $FLAG $TEXT"]
