@@ -26,7 +26,10 @@ spec:
             - name: FLAG
               value: "-d"
             - name: TEXT
-              value: "."
+              value: "../../test"
+          volumeMounts:
+            - mountPath: /test
+              name: hasher-volume
         - name: sidecar
           image: hasher:latest
           imagePullPolicy: Never
@@ -38,4 +41,12 @@ spec:
             - name: FLAG
               value: "-check"
             - name: TEXT
-              value: "."
+              value: "../../test"
+          volumeMounts:
+            - mountPath: /test
+              name: hasher-volume
+      volumes:
+        - name: hasher-volume
+          persistentVolumeClaim:
+            claimName: hasher-persistent-volumeclaim
+      restartPolicy: Always
