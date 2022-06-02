@@ -25,6 +25,8 @@ spec:
           env:
             - name: FLAG
               value: "-d"
+            - name: TEXT
+              value: "."
         - name: sidecar
           image: hasher:latest
           imagePullPolicy: Never
@@ -34,4 +36,6 @@ spec:
           command: [ "sh","-c","./sha256sum $FLAG $TEXT" ]
           env:
             - name: FLAG
-              value: "-c"
+              value: "-check"
+            - name: TEXT
+              value: "."

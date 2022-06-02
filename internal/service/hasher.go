@@ -184,10 +184,11 @@ func (s HasherService) ReturnResult(ctx context.Context, hashes <-chan model.Fil
 				return result
 			}
 			result = append(result, hash)
-		case <-ctx.Done():
-			log.Println("request canceled by context")
-			os.Exit(1)
-			return nil
+			// modified for k8s deployment
+			//case <-ctx.Done():
+			//	log.Println("request canceled by context")
+			//	os.Exit(1)
+			//	return nil
 		}
 	}
 	return result
