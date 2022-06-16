@@ -15,11 +15,6 @@ type ChangedFiles struct {
 	NewHash  string
 }
 
-type DeletedFiles struct {
-	OldHash  string
-	FilePath string
-}
-
 type FileInfo struct {
 	FileName  string `db:"file_name"`
 	FilePath  string `db:"file_path"`

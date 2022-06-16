@@ -1,7 +1,6 @@
 package service
 
 import (
-	"context"
 	"log"
 	"os"
 	"path/filepath"
@@ -58,26 +57,36 @@ func (s HasherService) FileHash(path string) (*model.FileInfo, error) {
 	return &data, nil
 }
 
-func (s HasherService) DirectoryHash(ctx context.Context, path string) ([]model.FileInfo, error) {
+func (s HasherService) DirectoryHash(path string) ([]model.FileInfo, error) {
+	dbHashes, err := s.repo.GetFilesInfo(path, s.hashType)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if dbHashes != nil {
+		return dbHashes, nil
+	}
+
 	paths := make(chan string)
 	hashes := make(chan model.FileInfo)
 
 	go s.Sha256sum(paths, hashes)
 	go s.LookUpManager(path, paths)
-	result := s.ReturnResult(ctx, hashes)
+	result := s.ReturnResult(hashes)
 
-	err := s.repo.SaveDirectoryHash(result)
+	err = s.repo.SaveDirectoryHash(result)
 
 	return result, err
 }
 
-func (s HasherService) CompareHash(ctx context.Context, path string) ([]model.ChangedFiles, error) {
+func (s HasherService) CompareHash(path string) ([]model.ChangedFiles, error) {
 	paths := make(chan string)
 	hashes := make(chan model.FileInfo)
 
 	go s.Sha256sum(paths, hashes)
 	go s.LookUpManager(path, paths)
-	newHashes := s.ReturnResult(ctx, hashes)
+	newHashes := s.ReturnResult(hashes)
 
 	oldHashes, err := s.repo.GetFilesInfo(path, s.hashType)
 	if err != nil {
@@ -98,16 +107,30 @@ func (s HasherService) CompareHash(ctx context.Context, path string) ([]model.Ch
 		}
 	}
 
+	deletedFiles, err := s.CheckDeleted(path)
+	if err != nil {
+		return nil, err
+	}
+
+	resultsHash = append(resultsHash, deletedFiles...)
+
+	newFiles, err := s.CheckNew(path)
+	if err != nil {
+		return nil, err
+	}
+
+	resultsHash = append(resultsHash, newFiles...)
+
 	return resultsHash, err
 }
 
-func (s HasherService) CheckDeleted(ctx context.Context, path string) ([]model.DeletedFiles, error) {
+func (s HasherService) CheckDeleted(path string) ([]model.ChangedFiles, error) {
 	paths := make(chan string)
 	hashes := make(chan model.FileInfo)
 
 	go s.Sha256sum(paths, hashes)
 	go s.LookUpManager(path, paths)
-	newHashes := s.ReturnResult(ctx, hashes)
+	newHashes := s.ReturnResult(hashes)
 
 	oldHashes, err := s.repo.GetFilesInfo(path, s.hashType)
 	if err != nil {
@@ -119,20 +142,50 @@ func (s HasherService) CheckDeleted(ctx context.Context, path string) ([]model.D
 		deletedFiles[value.FilePath] = struct{}{}
 	}
 
-	var result []model.DeletedFiles
+	var result []model.ChangedFiles
 
 	for _, value := range oldHashes {
 		if _, ok := deletedFiles[value.FilePath]; !ok {
-			result = append(result, model.DeletedFiles{
-				FilePath: value.FilePath,
+			result = append(result, model.ChangedFiles{
+				FileName: value.FileName,
 				OldHash:  value.HashValue,
 			})
 		}
 	}
 
-	err = s.repo.DeletedItemUpdate(result)
+	return result, nil
+}
 
-	return result, err
+func (s HasherService) CheckNew(path string) ([]model.ChangedFiles, error) {
+	paths := make(chan string)
+	hashes := make(chan model.FileInfo)
+
+	go s.Sha256sum(paths, hashes)
+	go s.LookUpManager(path, paths)
+	newHashes := s.ReturnResult(hashes)
+
+	oldHashes, err := s.repo.GetFilesInfo(path, s.hashType)
+	if err != nil {
+		return nil, err
+	}
+
+	newFiles := make(map[string]struct{}, len(newHashes))
+	for _, value := range oldHashes {
+		newFiles[value.FilePath] = struct{}{}
+	}
+
+	var result []model.ChangedFiles
+
+	for _, value := range newHashes {
+		if _, ok := newFiles[value.FilePath]; !ok {
+			result = append(result, model.ChangedFiles{
+				FileName: value.FileName,
+				OldHash:  value.HashValue,
+			})
+		}
+	}
+
+	return result, nil
 }
 
 func (s HasherService) LookUpManager(inputPath string, paths chan<- string) {
@@ -175,7 +228,7 @@ func (s HasherService) Sha256sum(paths chan string, hashes chan model.FileInfo) 
 	wg.Wait()
 }
 
-func (s HasherService) ReturnResult(ctx context.Context, hashes <-chan model.FileInfo) []model.FileInfo {
+func (s HasherService) ReturnResult(hashes <-chan model.FileInfo) []model.FileInfo {
 	var result []model.FileInfo
 	for {
 		select {
@@ -184,12 +237,6 @@ func (s HasherService) ReturnResult(ctx context.Context, hashes <-chan model.Fil
 				return result
 			}
 			result = append(result, hash)
-			// modified for k8s deployment
-			//case <-ctx.Done():
-			//	log.Println("request canceled by context")
-			//	os.Exit(1)
-			//	return nil
 		}
 	}
-	return result
 }

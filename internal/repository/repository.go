@@ -9,7 +9,6 @@ type Hasher interface {
 	SaveHash(input model.FileInfo) error
 	SaveDirectoryHash(input []model.FileInfo) error
 	GetFilesInfo(dirPath, hashType string) ([]model.FileInfo, error)
-	DeletedItemUpdate(input []model.DeletedFiles) error
 }
 
 type Repository struct {

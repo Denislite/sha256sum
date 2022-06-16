@@ -55,7 +55,7 @@ func (r *HasherRepository) SaveDirectoryHash(input []model.FileInfo) error {
 func (r *HasherRepository) GetFilesInfo(dirPath, hashType string) ([]model.FileInfo, error) {
 	var result []model.FileInfo
 
-	query := fmt.Sprintf(`SELECT file_name, file_path, hash_value, hash_type, deleted 
+	query := fmt.Sprintf(`SELECT file_name, file_path, hash_value, hash_type
 		FROM files WHERE file_path like $1 AND hash_type = $2`)
 
 	err := r.db.Select(&result, query, "%"+dirPath+"%", hashType)
@@ -65,25 +65,4 @@ func (r *HasherRepository) GetFilesInfo(dirPath, hashType string) ([]model.FileI
 	}
 
 	return result, nil
-}
-
-func (r *HasherRepository) DeletedItemUpdate(input []model.DeletedFiles) error {
-	tx, err := r.db.Begin()
-
-	if err != nil {
-		return err
-	}
-
-	query := fmt.Sprintf(`UPDATE files SET deleted = true WHERE file_path=$1`)
-
-	for _, v := range input {
-		_, err := tx.Exec(query, v.FilePath)
-
-		if err != nil {
-			tx.Rollback()
-			return err
-		}
-	}
-
-	return tx.Commit()
 }

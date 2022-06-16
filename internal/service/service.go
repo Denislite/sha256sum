@@ -1,7 +1,6 @@
 package service
 
 import (
-	"context"
 	"sha256sum/internal/model"
 	"sha256sum/internal/repository"
 	"sync"
@@ -9,13 +8,14 @@ import (
 
 type Hasher interface {
 	FileHash(path string) (*model.FileInfo, error)
-	DirectoryHash(ctx context.Context, path string) ([]model.FileInfo, error)
-	CompareHash(ctx context.Context, path string) ([]model.ChangedFiles, error)
-	CheckDeleted(ctx context.Context, path string) ([]model.DeletedFiles, error)
+	DirectoryHash(path string) ([]model.FileInfo, error)
+	CompareHash(path string) ([]model.ChangedFiles, error)
+	CheckDeleted(path string) ([]model.ChangedFiles, error)
+	CheckNew(path string) ([]model.ChangedFiles, error)
 	LookUpManager(inputPath string, paths chan<- string)
 	Hasher(wg *sync.WaitGroup, paths <-chan string, hashes chan<- model.FileInfo)
 	Sha256sum(paths chan string, hashes chan model.FileInfo)
-	ReturnResult(ctx context.Context, hashes <-chan model.FileInfo) []model.FileInfo
+	ReturnResult(hashes <-chan model.FileInfo) []model.FileInfo
 }
 
 type Service struct {
