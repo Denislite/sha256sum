@@ -34,20 +34,20 @@ func init() {
 func main() {
 	utils.CheckSignal(signals)
 
-	log.Println("|| 🛠 Connecting to DB      ||")
+	log.Println("### 🛠 Connecting to DB")
 
 	db, err := repository.NewPostgresDB()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	log.Println("|| 🎯 Connection successful ||")
+	log.Println("### 🎯 Connection successful")
 
 	r := repository.NewRepository(db)
 
 	s := service.NewService(r, hashType)
 
-	log.Println("|| 🗄 Check DB data         ||")
+	log.Println("### 🗄 Check DB data")
 
 	_, err = s.DirectoryHash(path)
 
@@ -55,31 +55,11 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	log.Printf("|| 🎱 Database was checked  ||")
-	log.Printf("||==========================||")
+	log.Printf("### 🎱 Database was checked")
 
 	ticker := time.NewTicker(15 * time.Second)
 
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				result, err := s.CompareHash(path)
-				if err != nil {
-					log.Fatalln(err)
-				}
-				if result != nil {
-					log.Println("|| Changed files:")
-					for _, hash := range result {
-						log.Printf("|| %s %s %s \n",
-							hash.FileName, hash.OldHash, hash.NewHash)
-					}
-					log.Fatalln("|| ❌  Files was changed, restarting pod...")
-				}
-				log.Println("|| ✅  Directory was checked, all right")
-			}
-		}
-	}()
+	go s.DirectoryCheck(ticker, path)
 	<-signals
 
 	ticker.Stop()

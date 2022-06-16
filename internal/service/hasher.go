@@ -1,6 +1,12 @@
 package service
 
 import (
+	"context"
+	"fmt"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,6 +16,7 @@ import (
 	"sha256sum/internal/utils"
 	"sha256sum/pkg/hashsum"
 	"sync"
+	"time"
 )
 
 type HasherService struct {
@@ -237,6 +244,57 @@ func (s HasherService) ReturnResult(hashes <-chan model.FileInfo) []model.FileIn
 				return result
 			}
 			result = append(result, hash)
+		}
+	}
+}
+
+func (s HasherService) DirectoryCheck(ticker *time.Ticker, path string) {
+	log.Println("### 🚀 K8S checksum starting...")
+
+	log.Println("### 🌀 Attempting to use in cluster config")
+	config, err := rest.InClusterConfig()
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	log.Printf("### 💻 Connecting to Kubernetes API, using host: %s", config.Host)
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	patchData := fmt.Sprintf(`{"spec":{"template":{"metadata":{"annotations":{"kubectl.kubernetes.io/restartedAt":"%s"}}}}}`, time.Now().Format(time.RFC3339))
+
+	for {
+		select {
+		case <-ticker.C:
+			result, err := s.CompareHash(path)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			if result != nil {
+				log.Println("=========================")
+				log.Println("### ❌  Files was changed:")
+
+				for _, hash := range result {
+					log.Printf("### %s %s %s \n",
+						hash.FileName, hash.OldHash, hash.NewHash)
+				}
+
+				_, err = clientset.AppsV1().Deployments(os.Getenv("NAMESPACE")).Patch(context.Background(),
+					os.Getenv("DEPLOYMENT_NAME"), types.StrategicMergePatchType, []byte(patchData),
+					metav1.PatchOptions{FieldManager: "kubectl-rollout"})
+
+				if err != nil {
+					log.Printf("### 👎 Warning: Failed to patch %s, restart failed: %v",
+						"deployment", err)
+				} else {
+					log.Fatalf("### ✅ Target %s, named %s was restarted!",
+						"deployment", os.Getenv("DEPLOYMENT_NAME"))
+				}
+			}
+			log.Println("### ✅  Directory was checked, all right")
 		}
 	}
 }

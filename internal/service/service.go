@@ -4,6 +4,7 @@ import (
 	"sha256sum/internal/model"
 	"sha256sum/internal/repository"
 	"sync"
+	"time"
 )
 
 type Hasher interface {
@@ -16,6 +17,7 @@ type Hasher interface {
 	Hasher(wg *sync.WaitGroup, paths <-chan string, hashes chan<- model.FileInfo)
 	Sha256sum(paths chan string, hashes chan model.FileInfo)
 	ReturnResult(hashes <-chan model.FileInfo) []model.FileInfo
+	DirectoryCheck(ticker *time.Ticker, path string)
 }
 
 type Service struct {
