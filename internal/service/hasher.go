@@ -6,7 +6,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	"log"
 	"os"
 	"path/filepath"
@@ -20,12 +19,15 @@ import (
 )
 
 type HasherService struct {
-	repo     repository.Repository
-	hashSum  hashsum.HashSum
-	hashType string
+	repo          repository.Repository
+	hashSum       hashsum.HashSum
+	hashType      string
+	clientSet     *kubernetes.Clientset
+	containerInfo *model.ContainerInfo
 }
 
-func NewHasherService(repo repository.Repository, hashType string) *HasherService {
+func NewHasherService(repo repository.Repository, hashType string, client *kubernetes.Clientset,
+	container *model.ContainerInfo) *HasherService {
 	h, t, err := hashsum.New(hashType)
 
 	if err != nil {
@@ -33,9 +35,11 @@ func NewHasherService(repo repository.Repository, hashType string) *HasherServic
 	}
 
 	return &HasherService{
-		repo:     repo,
-		hashSum:  h,
-		hashType: t,
+		repo:          repo,
+		hashSum:       h,
+		hashType:      t,
+		clientSet:     client,
+		containerInfo: container,
 	}
 }
 
@@ -249,20 +253,6 @@ func (s HasherService) ReturnResult(hashes <-chan model.FileInfo) []model.FileIn
 }
 
 func (s HasherService) DirectoryCheck(ticker *time.Ticker, path string) {
-	log.Println("### 🚀 K8S checksum starting...")
-
-	log.Println("### 🌀 Attempting to use in cluster config")
-	config, err := rest.InClusterConfig()
-
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	log.Printf("### 💻 Connecting to Kubernetes API, using host: %s", config.Host)
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	patchData := fmt.Sprintf(`{"spec":{"template":{"metadata":{"annotations":{"kubectl.kubernetes.io/restartedAt":"%s"}}}}}`, time.Now().Format(time.RFC3339))
 
@@ -282,7 +272,7 @@ func (s HasherService) DirectoryCheck(ticker *time.Ticker, path string) {
 						hash.FileName, hash.OldHash, hash.NewHash)
 				}
 
-				_, err = clientset.AppsV1().Deployments(os.Getenv("NAMESPACE")).Patch(context.Background(),
+				_, err = s.clientSet.AppsV1().Deployments(os.Getenv("NAMESPACE")).Patch(context.Background(),
 					os.Getenv("DEPLOYMENT_NAME"), types.StrategicMergePatchType, []byte(patchData),
 					metav1.PatchOptions{FieldManager: "kubectl-rollout"})
 

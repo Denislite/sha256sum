@@ -1,6 +1,7 @@
 package service
 
 import (
+	"k8s.io/client-go/kubernetes"
 	"sha256sum/internal/model"
 	"sha256sum/internal/repository"
 	"sync"
@@ -24,6 +25,7 @@ type Service struct {
 	Hasher
 }
 
-func NewService(repo repository.Repository, hashType string) *Service {
-	return &Service{Hasher: NewHasherService(repo, hashType)}
+func NewService(repo repository.Repository, hashType string, client *kubernetes.Clientset,
+	container *model.ContainerInfo) *Service {
+	return &Service{Hasher: NewHasherService(repo, hashType, client, container)}
 }

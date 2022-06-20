@@ -22,3 +22,8 @@ type FileInfo struct {
 	HashType  string `db:"hash_type"`
 	Deleted   bool   `db:"deleted"`
 }
+
+type ContainerInfo struct {
+	ImageName    string `db:"image_name"`
+	ImageVersion string `db:"image_version"`
+}

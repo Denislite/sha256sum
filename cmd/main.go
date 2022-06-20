@@ -45,7 +45,12 @@ func main() {
 
 	r := repository.NewRepository(db)
 
-	s := service.NewService(r, hashType)
+	k, container, err := utils.NewK8SConnection()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	s := service.NewService(r, hashType, k, container)
 
 	log.Println("### 🗄 Check DB data")
 
