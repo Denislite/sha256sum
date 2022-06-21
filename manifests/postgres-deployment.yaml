@@ -26,12 +26,15 @@ spec:
                 command: ["/bin/sh","-c","sleep 20 && PGPASSWORD=$POSTGRES_PASSWORD psql -w -d $POSTGRES_DB -U $POSTGRES_USER -c 
                 'CREATE TABLE files
                 (
-                    id          BIGSERIAL PRIMARY KEY,
-                    file_name   VARCHAR,
-                    file_path   TEXT,
-                    hash_value  VARCHAR,
-                    hash_type   VARCHAR,
-                    deleted     BOOLEAN DEFAULT FALSE,
+                    id              BIGSERIAL PRIMARY KEY,
+                    pod_name        VARCHAR,
+                    image_name      VARCHAR,
+                    image_version   VARCHAR,
+                    file_name       VARCHAR,
+                    file_path       TEXT,
+                    hash_value      VARCHAR,
+                    hash_type       VARCHAR,
+                    created_at      TIMESTAMP NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
                 
                     CONSTRAINT files_unique UNIQUE (file_path, hash_type)
                 );'"]

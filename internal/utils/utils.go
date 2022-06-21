@@ -44,6 +44,7 @@ func NewK8SConnection() (*kubernetes.Clientset, *model.ContainerInfo, error) {
 	}
 
 	container := &model.ContainerInfo{
+		PodName:      os.Getenv("POD_NAME"),
 		ImageName:    deploymentList.Spec.Template.Spec.Containers[0].Name,
 		ImageVersion: deploymentList.Spec.Template.Spec.Containers[0].Image,
 	}

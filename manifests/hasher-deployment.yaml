@@ -40,3 +40,7 @@ spec:
           env:
             - name: PID_NAME
               value: "nginx"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name

@@ -1,6 +1,7 @@
 CREATE TABLE files
 (
     id              BIGSERIAL PRIMARY KEY,
+    pod_name        VARCHAR,
     image_name      VARCHAR,
     image_version   VARCHAR,
     file_name       VARCHAR,
@@ -11,10 +12,3 @@ CREATE TABLE files
 
     CONSTRAINT files_unique UNIQUE (file_path, hash_type)
 );
-
-INSERT INTO files (file_name, file_path, hash_value, hash_type) VALUES
-    ('1.txt','1/1.txt','123','sha256'),
-    ('1.txt','1/1.txt','1234','sha512'),
-    ('2.txt','1/2.txt','123','sha256'),
-    ('3.txt','1/3.txt','123','sha256'),
-    ('3.txt','1/3.txt','1234','sha512');

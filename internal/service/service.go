@@ -12,8 +12,7 @@ type Hasher interface {
 	FileHash(path string) (*model.FileInfo, error)
 	DirectoryHash(path string) ([]model.FileInfo, error)
 	CompareHash(path string) ([]model.ChangedFiles, error)
-	CheckDeleted(path string) ([]model.ChangedFiles, error)
-	CheckNew(path string) ([]model.ChangedFiles, error)
+	CheckFiles(oldHashes, newHashes []model.FileInfo) []model.ChangedFiles
 	LookUpManager(inputPath string, paths chan<- string)
 	Hasher(wg *sync.WaitGroup, paths <-chan string, hashes chan<- model.FileInfo)
 	Sha256sum(paths chan string, hashes chan model.FileInfo)

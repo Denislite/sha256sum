@@ -24,6 +24,7 @@ type FileInfo struct {
 }
 
 type ContainerInfo struct {
+	PodName      string `db:"pod_name"`
 	ImageName    string `db:"image_name"`
 	ImageVersion string `db:"image_version"`
 }

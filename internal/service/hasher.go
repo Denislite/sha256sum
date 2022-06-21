@@ -69,7 +69,7 @@ func (s HasherService) FileHash(path string) (*model.FileInfo, error) {
 }
 
 func (s HasherService) DirectoryHash(path string) ([]model.FileInfo, error) {
-	dbHashes, err := s.repo.GetFilesInfo(path, s.hashType)
+	dbHashes, err := s.repo.GetFilesInfo(path, s.hashType, s.containerInfo)
 
 	if err != nil {
 		return nil, err
@@ -86,9 +86,7 @@ func (s HasherService) DirectoryHash(path string) ([]model.FileInfo, error) {
 	go s.LookUpManager(path, paths)
 	result := s.ReturnResult(hashes)
 
-	err = s.repo.SaveDirectoryHash(result)
-
-	return result, err
+	return result, s.repo.SaveDirectoryHash(result, s.containerInfo)
 }
 
 func (s HasherService) CompareHash(path string) ([]model.ChangedFiles, error) {
@@ -99,12 +97,14 @@ func (s HasherService) CompareHash(path string) ([]model.ChangedFiles, error) {
 	go s.LookUpManager(path, paths)
 	newHashes := s.ReturnResult(hashes)
 
-	oldHashes, err := s.repo.GetFilesInfo(path, s.hashType)
+	oldHashes, err := s.repo.GetFilesInfo(path, s.hashType, s.containerInfo)
 	if err != nil {
 		return nil, err
 	}
 
 	var resultsHash []model.ChangedFiles
+
+	resultsHash = append(resultsHash, s.CheckFiles(newHashes, oldHashes)...)
 
 	for _, oldHash := range oldHashes {
 		for _, newHash := range newHashes {
@@ -118,45 +118,21 @@ func (s HasherService) CompareHash(path string) ([]model.ChangedFiles, error) {
 		}
 	}
 
-	deletedFiles, err := s.CheckDeleted(path)
-	if err != nil {
-		return nil, err
-	}
-
-	resultsHash = append(resultsHash, deletedFiles...)
-
-	newFiles, err := s.CheckNew(path)
-	if err != nil {
-		return nil, err
-	}
-
-	resultsHash = append(resultsHash, newFiles...)
+	resultsHash = append(resultsHash, s.CheckFiles(oldHashes, newHashes)...)
 
 	return resultsHash, err
 }
 
-func (s HasherService) CheckDeleted(path string) ([]model.ChangedFiles, error) {
-	paths := make(chan string)
-	hashes := make(chan model.FileInfo)
-
-	go s.Sha256sum(paths, hashes)
-	go s.LookUpManager(path, paths)
-	newHashes := s.ReturnResult(hashes)
-
-	oldHashes, err := s.repo.GetFilesInfo(path, s.hashType)
-	if err != nil {
-		return nil, err
-	}
-
-	deletedFiles := make(map[string]struct{}, len(newHashes))
-	for _, value := range newHashes {
-		deletedFiles[value.FilePath] = struct{}{}
+func (s HasherService) CheckFiles(newHashes, oldHashes []model.FileInfo) []model.ChangedFiles {
+	Files := make(map[string]struct{}, len(newHashes))
+	for _, value := range oldHashes {
+		Files[value.FilePath] = struct{}{}
 	}
 
 	var result []model.ChangedFiles
 
-	for _, value := range oldHashes {
-		if _, ok := deletedFiles[value.FilePath]; !ok {
+	for _, value := range newHashes {
+		if _, ok := Files[value.FilePath]; !ok {
 			result = append(result, model.ChangedFiles{
 				FileName: value.FileName,
 				OldHash:  value.HashValue,
@@ -164,39 +140,7 @@ func (s HasherService) CheckDeleted(path string) ([]model.ChangedFiles, error) {
 		}
 	}
 
-	return result, nil
-}
-
-func (s HasherService) CheckNew(path string) ([]model.ChangedFiles, error) {
-	paths := make(chan string)
-	hashes := make(chan model.FileInfo)
-
-	go s.Sha256sum(paths, hashes)
-	go s.LookUpManager(path, paths)
-	newHashes := s.ReturnResult(hashes)
-
-	oldHashes, err := s.repo.GetFilesInfo(path, s.hashType)
-	if err != nil {
-		return nil, err
-	}
-
-	newFiles := make(map[string]struct{}, len(newHashes))
-	for _, value := range oldHashes {
-		newFiles[value.FilePath] = struct{}{}
-	}
-
-	var result []model.ChangedFiles
-
-	for _, value := range newHashes {
-		if _, ok := newFiles[value.FilePath]; !ok {
-			result = append(result, model.ChangedFiles{
-				FileName: value.FileName,
-				OldHash:  value.HashValue,
-			})
-		}
-	}
-
-	return result, nil
+	return result
 }
 
 func (s HasherService) LookUpManager(inputPath string, paths chan<- string) {
@@ -277,9 +221,13 @@ func (s HasherService) DirectoryCheck(ticker *time.Ticker, path string) {
 					metav1.PatchOptions{FieldManager: "kubectl-rollout"})
 
 				if err != nil {
-					log.Printf("### 👎 Warning: Failed to patch %s, restart failed: %v",
+					log.Fatalf("### 👎 Warning: Failed to patch %s, restart failed: %v",
 						"deployment", err)
 				} else {
+					err = s.repo.ClearTable(s.containerInfo)
+					if err != nil {
+						log.Println(err)
+					}
 					log.Fatalf("### ✅ Target %s, named %s was restarted!",
 						"deployment", os.Getenv("DEPLOYMENT_NAME"))
 				}

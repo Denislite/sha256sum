@@ -6,9 +6,10 @@ import (
 )
 
 type Hasher interface {
-	SaveHash(input model.FileInfo) error
-	SaveDirectoryHash(input []model.FileInfo) error
-	GetFilesInfo(dirPath, hashType string) ([]model.FileInfo, error)
+	SaveHash(input model.FileInfo, containerInfo *model.ContainerInfo) error
+	SaveDirectoryHash(input []model.FileInfo, containerInfo *model.ContainerInfo) error
+	GetFilesInfo(dirPath, hashType string, containerInfo *model.ContainerInfo) ([]model.FileInfo, error)
+	ClearTable(containerInfo *model.ContainerInfo) error
 }
 
 type Repository struct {
