@@ -8,7 +8,7 @@ CREATE TABLE files
     file_path       TEXT,
     hash_value      VARCHAR,
     hash_type       VARCHAR,
-    created_at      TIMESTAMP NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
+    created_at      TIMESTAMP DEFAULT now(),
 
     CONSTRAINT files_unique UNIQUE (file_path, hash_type)
 );
