@@ -8,12 +8,14 @@ import (
 	"sha256sum/internal/repository"
 	"sha256sum/internal/service"
 	"sha256sum/internal/utils"
+	"strconv"
 	"time"
 )
 
 var (
 	path     string
 	hashType string
+	duration int
 	signals  chan os.Signal
 )
 
@@ -26,6 +28,11 @@ func init() {
 
 	if err != nil {
 		log.Fatalln("Error loading .env file")
+	}
+
+	duration, err = strconv.Atoi(os.Getenv("DURATION_TIME"))
+	if err != nil {
+		duration = 15
 	}
 
 	signals = make(chan os.Signal, 1)
@@ -62,7 +69,7 @@ func main() {
 
 	log.Printf("### 🎱 Database was checked")
 
-	ticker := time.NewTicker(15 * time.Second)
+	ticker := time.NewTicker(time.Duration(duration) * time.Second)
 
 	go s.DirectoryCheck(ticker, path)
 	<-signals
