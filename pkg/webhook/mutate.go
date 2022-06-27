@@ -28,7 +28,6 @@ func AdmissionReviewFromRequest(r *http.Request) (*admissionv1.AdmissionReview, 
 }
 
 func AdmissionResponseFromReview(admReview *admissionv1.AdmissionReview) (*admissionv1.AdmissionResponse, error) {
-	// check if valid pod resource
 	podResource := metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
 	if admReview.Request.Resource != podResource {
 		err := fmt.Errorf("did not receive pod, got %s", admReview.Request.Resource.Resource)
@@ -48,6 +47,8 @@ func AdmissionResponseFromReview(admReview *admissionv1.AdmissionReview) (*admis
 
 	var patch string
 	patchType := v1.PatchTypeJSONPatch
+
+	log.Println(pod.Name)
 
 	log.Println("pod has following labels", pod.Labels)
 	if _, ok := pod.Labels["tcpdump-sidecar"]; ok {
@@ -74,8 +75,15 @@ func AdmissionResponseFromReview(admReview *admissionv1.AdmissionReview) (*admis
 				"command": [
 				  "sh",
 				  "-c",
-				  "pid=$(pidof -s $PID_NAME); ./sha256sum -d ../proc/$pid/root/$MOUNT_PATH;"
+                  "conf=$(ls /etc/hasher-config); data=$(cat /etc/hasher-config/$conf);env1=$(echo $data | cut -f 1 -d\" \"); PID_NAME=\"${env1#*=}\";env2=$(echo $data | cut -f 2 -d\" \"); MOUNT_PATH=\"${env2##*=}\";pid=$(pidof -s $PID_NAME); ./sha256sum -d ../proc/$pid/root/$MOUNT_PATH;"
 				],
+				"volumeMounts": [
+                  {
+      				"name": "hasher-config",
+  					"mountPath": "/etc/hasher-config",
+      				"readOnly": true
+   				  }
+  				],
 				"env": [
 				  {
 					"name": "POD_NAME",

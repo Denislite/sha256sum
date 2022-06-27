@@ -32,3 +32,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+      volumes:
+        - name: hasher-config
+          configMap:
+            name: hasher-config
+            items:
+              - key: nginx
+                path: nginx

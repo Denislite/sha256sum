@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"sha256sum/internal/model"
+	"strings"
 )
 
 func CheckSignal(signals chan os.Signal) {
@@ -37,8 +38,16 @@ func NewK8SConnection() (*kubernetes.Clientset, *model.ContainerInfo, error) {
 		return nil, nil, err
 	}
 
+	podName := os.Getenv("POD_NAME")
+
+	deploymentName := func(podName string) string {
+		elements := strings.Split(podName, "-")
+		newElements := elements[:len(elements)-2]
+		return strings.Join(newElements, "-")
+	}(podName)
+
 	deploymentList, err := clientset.AppsV1().Deployments(os.Getenv("NAMESPACE")).Get(context.Background(),
-		os.Getenv("DEPLOYMENT_NAME"), metav1.GetOptions{})
+		deploymentName, metav1.GetOptions{})
 	if err != nil {
 		return nil, nil, err
 	}

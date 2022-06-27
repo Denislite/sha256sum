@@ -4,8 +4,12 @@ metadata:
   name: hasher-config
   namespace: default
   labels:
-    app: nginx-webapp
+    app: nginx
 data:
-  PID_NAME: "nginx"
-  MAIN_CONTAINER_NAME: "nginx"
-  MOUNT_PATH: "etc/nginx/nginx.conf"
+  NAMESPACE: "default"
+  nginx: |
+    PID_NAME=nginx
+    MOUNT_PATH=etc/nginx/nginx.conf
+  php: |
+    PID_NAME=php
+    MOUNT_PATH=etc/deb.conf
