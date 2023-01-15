@@ -1,28 +1,16 @@
 package utils
 
 import (
-	"flag"
-	"fmt"
+	"context"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"log"
 	"os"
 	"os/signal"
+	"sha256sum/internal/model"
+	"strings"
 )
-
-func CreateDocs() {
-	flag.Usage = func() {
-		_, err := fmt.Fprintln(os.Stderr, "Options for tool:")
-		if err != nil {
-			return
-		}
-		flag.VisitAll(func(f *flag.Flag) {
-			_, err := fmt.Fprintf(os.Stderr, "-%v %v  \n", f.Name, f.Usage)
-			if err != nil {
-				log.Println(ErrorDocs)
-				return
-			}
-		})
-	}
-}
 
 func CheckSignal(signals chan os.Signal) {
 	signal.Notify(signals, os.Interrupt)
@@ -32,4 +20,43 @@ func CheckSignal(signals chan os.Signal) {
 			os.Exit(0)
 		}
 	}()
+}
+
+func NewK8SConnection() (*kubernetes.Clientset, *model.ContainerInfo, error) {
+	log.Println("### 🚀 K8S checksum starting...")
+
+	log.Println("### 🌀 Attempting to use in cluster config")
+	config, err := rest.InClusterConfig()
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	log.Printf("### 💻 Connecting to Kubernetes API, using host: %s", config.Host)
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	podName := os.Getenv("POD_NAME")
+
+	deploymentName := func(podName string) string {
+		elements := strings.Split(podName, "-")
+		newElements := elements[:len(elements)-2]
+		return strings.Join(newElements, "-")
+	}(podName)
+
+	deploymentList, err := clientset.AppsV1().Deployments(os.Getenv("NAMESPACE")).Get(context.Background(),
+		deploymentName, metav1.GetOptions{})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	container := &model.ContainerInfo{
+		PodName:      os.Getenv("POD_NAME"),
+		ImageName:    deploymentList.Spec.Template.Spec.Containers[0].Name,
+		ImageVersion: deploymentList.Spec.Template.Spec.Containers[0].Image,
+	}
+
+	return clientset, container, nil
 }
