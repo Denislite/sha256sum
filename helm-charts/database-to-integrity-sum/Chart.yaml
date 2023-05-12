@@ -8,5 +8,5 @@ appVersion: "1.0.0"
 dependencies:
   # dependency with database "postgresql"
   - name: postgresql
-    version: 12.1.14
+    version: 12.4.3
     repository: https://charts.bitnami.com/bitnami
