@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
@@ -10,29 +11,25 @@ import (
 
 type AppRepository struct {
 	ports.IHashRepository
+	db     *sql.DB
 	logger *logrus.Logger
 }
 
-func NewAppRepository(logger *logrus.Logger) *AppRepository {
+func NewAppRepository(logger *logrus.Logger, db *sql.DB) *AppRepository {
 	return &AppRepository{
-		IHashRepository: NewHashRepository(logger),
+		IHashRepository: NewHashRepository(logger, db),
 		logger:          logger,
+		db:              db,
 	}
 }
 
 // IsExistDeploymentNameInDB checks if the base is empty
 func (ar AppRepository) IsExistDeploymentNameInDB(deploymentName string) (bool, error) {
-	db, err := ConnectionToDB(ar.logger)
-	if err != nil {
-		ar.logger.Error("failed to connection to database %s", err)
-		return false, err
-	}
-	defer db.Close()
-
 	var count int
+
 	query := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE name_deployment=$1 LIMIT 1;", os.Getenv("TABLE_NAME"))
-	row := db.QueryRow(query, deploymentName)
-	err = row.Scan(&count)
+	row := ar.db.QueryRow(query, deploymentName)
+	err := row.Scan(&count)
 	if err != nil {
 		ar.logger.Error("err while scan row in database ", err)
 		return false, err

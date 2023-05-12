@@ -14,7 +14,12 @@ import (
 
 func Initialize(ctx context.Context, logger *logrus.Logger, sig chan os.Signal) {
 	// Initialize repository
-	repository := repositories.NewAppRepository(logger)
+	db, err := repositories.ConnectionToDB(logger)
+	if err != nil {
+		logger.Fatalf("failed to connection to database %s", err)
+	}
+
+	repository := repositories.NewAppRepository(logger, db)
 
 	// Initialize service
 	algorithm := os.Getenv("ALGORITHM")

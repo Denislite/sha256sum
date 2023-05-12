@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
@@ -11,24 +12,19 @@ import (
 
 type HashRepository struct {
 	logger *logrus.Logger
+	db     *sql.DB
 }
 
-func NewHashRepository(logger *logrus.Logger) *HashRepository {
+func NewHashRepository(logger *logrus.Logger, db *sql.DB) *HashRepository {
 	return &HashRepository{
 		logger: logger,
+		db:     db,
 	}
 }
 
 // SaveHashData iterates through all elements of the slice and triggers the save to database function
 func (hr HashRepository) SaveHashData(allHashData []*api.HashData, deploymentData *models.DeploymentData) error {
-	db, err := ConnectionToDB(hr.logger)
-	if err != nil {
-		hr.logger.Error("failed to connection to database %s", err)
-		return err
-	}
-	defer db.Close()
-
-	tx, err := db.Begin()
+	tx, err := hr.db.Begin()
 	if err != nil {
 		hr.logger.Error("err while saving data in database ", err)
 		return err
@@ -55,18 +51,12 @@ func (hr HashRepository) SaveHashData(allHashData []*api.HashData, deploymentDat
 
 // GetHashData retrieves data from the database using the path and algorithm
 func (hr HashRepository) GetHashData(dirFiles, algorithm string, deploymentData *models.DeploymentData) ([]*models.HashDataFromDB, error) {
-	db, err := ConnectionToDB(hr.logger)
-	if err != nil {
-		hr.logger.Error("failed to connection to database %s", err)
-		return nil, err
-	}
-	defer db.Close()
 
 	var allHashDataFromDB []*models.HashDataFromDB
 
 	query := fmt.Sprintf("SELECT id,file_name,full_file_path,hash_sum,algorithm,image_tag,name_pod,name_deployment FROM %s WHERE full_file_path LIKE $1 and algorithm=$2 and name_pod=$3", os.Getenv("TABLE_NAME"))
 
-	rows, err := db.Query(query, "%"+dirFiles+"%", algorithm, deploymentData.NamePod)
+	rows, err := hr.db.Query(query, "%"+dirFiles+"%", algorithm, deploymentData.NamePod)
 	if err != nil {
 		hr.logger.Error(err)
 		return nil, err
@@ -86,15 +76,9 @@ func (hr HashRepository) GetHashData(dirFiles, algorithm string, deploymentData 
 
 // DeleteFromTable removes data from the table that matches the name of the deployment
 func (hr HashRepository) DeleteFromTable(nameDeployment string) error {
-	db, err := ConnectionToDB(hr.logger)
-	if err != nil {
-		hr.logger.Error("failed to connection to database %s", err)
-		return err
-	}
-	defer db.Close()
 
 	query := fmt.Sprintf("DELETE FROM %s WHERE name_deployment=$1;", os.Getenv("TABLE_NAME"))
-	_, err = db.Exec(query, nameDeployment)
+	_, err := hr.db.Exec(query, nameDeployment)
 	if err != nil {
 		hr.logger.Error("err while deleting rows in database", err)
 		return err
